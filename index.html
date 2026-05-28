@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DnD Crawl Projector</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="stage" class="stage" aria-label="Projected encounter map">
+        <canvas id="ambientCanvas" class="ambient-canvas"></canvas>
+        <video id="mapVideo" class="map-video" muted loop playsinline></video>
+        <div class="map-texture"></div>
+        <div class="grid-overlay"></div>
+        <canvas id="effectCanvas" class="effect-canvas"></canvas>
+        <div id="fogLayer" class="fog-layer"></div>
+        <div id="tokenLayer" class="token-layer"></div>
+        <div id="menuRing" class="menu-ring hidden">
+          <button data-effect="fire">Fire</button>
+          <button data-effect="ice">Ice</button>
+          <button data-effect="heal">Heal</button>
+          <button data-effect="shock">Shock</button>
+        </div>
+        <div id="projectorHint" class="projector-hint">Load a map from the DM console</div>
+      </section>
+
+      <aside id="controls" class="controls" aria-label="DM controls">
+        <header class="control-header">
+          <div>
+            <p class="eyebrow">Encounter Console</p>
+            <h1>DnD Crawl Projector</h1>
+          </div>
+          <button id="projectorButton" class="icon-text">Projector</button>
+        </header>
+
+        <div class="panel">
+          <h2>Map</h2>
+          <select id="mediaSelect" class="media-select" aria-label="Map video library">
+            <option value="">Media library</option>
+          </select>
+          <label class="file-picker">
+            <input id="videoInput" type="file" accept="video/*">
+            <span>Preview local video</span>
+          </label>
+          <div class="button-row">
+            <button id="playPauseButton">Play</button>
+            <button id="fullscreenButton">Fullscreen</button>
+          </div>
+          <label class="slider-label">
+            Brightness
+            <input id="brightnessSlider" type="range" min="40" max="140" value="100">
+          </label>
+          <label class="slider-label">
+            Grid opacity
+            <input id="gridSlider" type="range" min="0" max="80" value="18">
+          </label>
+        </div>
+
+        <div class="panel">
+          <h2>Board Tools</h2>
+          <div class="tool-grid">
+            <button data-tool="token">Token</button>
+            <button data-tool="menu">Menu</button>
+            <button data-tool="fog">Fog</button>
+            <button data-tool="reveal">Reveal</button>
+          </div>
+          <div class="spell-grid">
+            <button data-effect="fire">Fire</button>
+            <button data-effect="ice">Ice</button>
+            <button data-effect="heal">Heal</button>
+            <button data-effect="shock">Shock</button>
+          </div>
+          <button id="clearButton" class="wide danger">Clear overlays</button>
+        </div>
+
+        <div class="panel ai-panel">
+          <div class="panel-heading">
+            <h2>AI Table Assistant</h2>
+            <span id="aiStatus" class="pill">Checking</span>
+          </div>
+          <select id="aiMode" class="media-select" aria-label="AI assistant mode">
+            <option value="rules">Rules</option>
+            <option value="hint">Hints</option>
+            <option value="dm">Acting DM</option>
+            <option value="story">Narration</option>
+            <option value="combat">Combat</option>
+          </select>
+          <textarea id="encounterNotes" class="notes-box" placeholder="Private DM notes, party level, monsters, room details, house rules"></textarea>
+          <div id="aiLog" class="ai-log" aria-live="polite"></div>
+          <textarea id="aiQuestion" class="question-box" placeholder="Ask about a rule, hint, scene, monster tactic, or what happens next"></textarea>
+          <div class="quick-grid">
+            <button data-ai-prompt="Check the current scene for likely rules issues or missing rolls.">Rule check</button>
+            <button data-ai-prompt="Give one subtle, spoiler-free hint for the players.">Hint</button>
+            <button data-ai-prompt="Narrate the current room or moment in two vivid sentences.">Narrate</button>
+            <button data-ai-prompt="Take over as DM for the next beat. Ask for rolls only when needed.">DM beat</button>
+          </div>
+          <button id="askAiButton" class="wide ask-button">Ask AI</button>
+        </div>
+
+        <div class="panel">
+          <h2>Camera</h2>
+          <div class="button-row">
+            <button id="cameraButton">Start camera</button>
+            <button id="calibrateButton">Calibrate</button>
+          </div>
+          <div class="camera-wrap">
+            <video id="cameraVideo" muted playsinline></video>
+            <canvas id="cameraCanvas"></canvas>
+          </div>
+          <p id="cameraStatus" class="status">Camera idle</p>
+        </div>
+      </aside>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
