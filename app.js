@@ -303,41 +303,98 @@ function hideMenu() {
 function triggerEffect(effect, x, y) {
   hideMenu();
   state.lastEffect = `${effect} at ${Math.round(x)}, ${Math.round(y)}`;
-  const colors = {
-    fire: ["#ffcf66", "#ff5b2e", "#7d1f16"],
-    ice: ["#e4fbff", "#73d7f2", "#316da3"],
-    heal: ["#fbffe4", "#65db7d", "#2d8f57"],
-    shock: ["#f2e85c", "#7e6cff", "#ffffff"],
-  }[effect] || ["#ffffff", "#d7aa4d", "#db4d37"];
+  const cx = (x / 100) * effectCanvas.width;
+  const cy = (y / 100) * effectCanvas.height;
+  const spawn = { fire: spawnFire, ice: spawnIce, shock: spawnShock, heal: spawnHeal }[effect];
+  if (spawn) spawn(cx, cy);
+  else spawnDefaultEffect(cx, cy);
+}
 
-  const centerX = (x / 100) * effectCanvas.width;
-  const centerY = (y / 100) * effectCanvas.height;
-  state.particles.push({
-    x: centerX,
-    y: centerY,
-    vx: 0,
-    vy: 0,
-    life: 34,
-    maxLife: 34,
-    size: 18,
-    color: colors[1],
-    ring: true,
-  });
+function spawnFire(cx, cy) {
+  state.particles.push({ kind: "ring", x: cx, y: cy, life: 28, maxLife: 28, size: 16, color: "#ff8c2e" });
+  for (let i = 0; i < 90; i++) {
+    const angle = (Math.random() - 0.5) * 1.4 - Math.PI / 2;
+    const speed = 1.5 + Math.random() * 5;
+    const life = 35 + Math.random() * 45;
+    state.particles.push({ kind: "flame", x: cx + (Math.random() - 0.5) * 24, y: cy,
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life, maxLife: life, size: 4 + Math.random() * 14 });
+  }
+  for (let i = 0; i < 45; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 2 + Math.random() * 6;
+    const life = 40 + Math.random() * 50;
+    state.particles.push({ kind: "ember", x: cx, y: cy,
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 1.5, life, maxLife: life, size: 1.5 + Math.random() * 3 });
+  }
+}
 
-  for (let i = 0; i < 120; i += 1) {
+function spawnIce(cx, cy) {
+  state.particles.push({ kind: "ring", x: cx, y: cy, life: 40, maxLife: 40, size: 14, color: "#c8f0ff" });
+  state.particles.push({ kind: "ring", x: cx, y: cy, life: 26, maxLife: 26, size: 10, color: "#e4fbff" });
+  const shardColors = ["#e4fbff", "#73d7f2", "#a8e8ff", "#316da3", "#ffffff"];
+  for (let i = 0; i < 60; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 3 + Math.random() * 8;
+    const life = 55 + Math.random() * 40;
+    state.particles.push({ kind: "frost", x: cx, y: cy,
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life, maxLife: life,
+      size: 2 + Math.random() * 9, color: shardColors[Math.floor(Math.random() * shardColors.length)], friction: 0.91 });
+  }
+  for (let i = 0; i < 28; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1 + Math.random() * 3;
+    const life = 65 + Math.random() * 35;
+    state.particles.push({ kind: "crystal", x: cx + (Math.random() - 0.5) * 40, y: cy + (Math.random() - 0.5) * 40,
+      vx: Math.cos(angle) * speed * 0.4, vy: Math.sin(angle) * speed * 0.4, life, maxLife: life,
+      size: 3 + Math.random() * 6, friction: 0.97 });
+  }
+}
+
+function spawnShock(cx, cy) {
+  state.particles.push({ kind: "ring", x: cx, y: cy, life: 18, maxLife: 18, size: 20, color: "#ffffff" });
+  state.particles.push({ kind: "ring", x: cx, y: cy, life: 14, maxLife: 14, size: 14, color: "#f2e85c" });
+  for (let i = 0; i < 7; i++) {
+    const angle = (i / 7) * Math.PI * 2 + Math.random() * 0.4;
+    const life = 14 + Math.random() * 14;
+    state.particles.push({ kind: "bolt", x: cx, y: cy, angle, len: 60 + Math.random() * 100,
+      segments: 5 + Math.floor(Math.random() * 4), life, maxLife: life,
+      color: Math.random() > 0.5 ? "#f2e85c" : "#a89dff" });
+  }
+  const sparkColors = ["#ffffff", "#f2e85c", "#c8b8ff", "#7e6cff"];
+  for (let i = 0; i < 100; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 4 + Math.random() * 14;
+    const life = 15 + Math.random() * 22;
+    state.particles.push({ kind: "spark", x: cx, y: cy,
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life, maxLife: life,
+      size: 1.5 + Math.random() * 4, color: sparkColors[Math.floor(Math.random() * sparkColors.length)],
+      wobble: 1.2 + Math.random() * 2 });
+  }
+}
+
+function spawnHeal(cx, cy) {
+  state.particles.push({ kind: "ring", x: cx, y: cy, life: 34, maxLife: 34, size: 18, color: "#65db7d" });
+  const healColors = ["#fbffe4", "#65db7d", "#2d8f57"];
+  for (let i = 0; i < 80; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 0.8 + Math.random() * 4;
+    const life = 44 + Math.random() * 34;
+    state.particles.push({ kind: "heal", x: cx, y: cy,
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 1, life, maxLife: life,
+      size: 2 + Math.random() * 10, color: healColors[Math.floor(Math.random() * healColors.length)] });
+  }
+}
+
+function spawnDefaultEffect(cx, cy) {
+  const colors = ["#ffffff", "#d7aa4d", "#db4d37"];
+  state.particles.push({ kind: "ring", x: cx, y: cy, life: 34, maxLife: 34, size: 18, color: colors[1] });
+  for (let i = 0; i < 120; i++) {
     const angle = Math.random() * Math.PI * 2;
     const speed = 0.9 + Math.random() * 5.6;
-    state.particles.push({
-      x: centerX,
-      y: centerY,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      life: 44 + Math.random() * 34,
-      maxLife: 78,
-      size: 2 + Math.random() * 10,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      ring: false,
-    });
+    const life = 44 + Math.random() * 34;
+    state.particles.push({ kind: "default", x: cx, y: cy,
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life, maxLife: life,
+      size: 2 + Math.random() * 10, color: colors[Math.floor(Math.random() * colors.length)] });
   }
 }
 
@@ -393,32 +450,176 @@ animateAmbient();
 function animateEffects() {
   effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
   state.particles = state.particles.filter((p) => p.life > 0);
+
   for (const p of state.particles) {
-    const alpha = Math.max(0, p.life / (p.maxLife || 70));
-    if (p.ring) {
-      const radius = (1 - alpha) * 130 + p.size;
-      effectCtx.globalAlpha = alpha * 0.9;
+    const t = Math.max(0, p.life / (p.maxLife || 60));
+
+    if (p.kind === "ring") {
+      const radius = (1 - t) * 130 + p.size;
+      effectCtx.globalAlpha = t * 0.9;
       effectCtx.lineWidth = 5;
       effectCtx.strokeStyle = p.color;
       effectCtx.beginPath();
       effectCtx.arc(p.x, p.y, radius, 0, Math.PI * 2);
       effectCtx.stroke();
       p.life -= 1;
-    } else {
+      continue;
+    }
+
+    if (p.kind === "flame") {
       p.x += p.vx;
       p.y += p.vy;
-      p.vy += 0.035;
+      p.vy -= 0.07;                          // fire rises
+      p.vx += (Math.random() - 0.5) * 0.3;  // turbulence
+      p.size *= 0.985;
       p.life -= 1;
-      effectCtx.globalAlpha = alpha;
-      effectCtx.shadowColor = p.color;
-      effectCtx.shadowBlur = 18;
+      const fireColors = ["#fff8d0", "#ffdd55", "#ff8822", "#dd3311", "#8b0000"];
+      const idx = Math.min(fireColors.length - 1, Math.floor((1 - t) * fireColors.length));
+      effectCtx.globalAlpha = Math.min(1, t * 2.5);
+      effectCtx.shadowColor = "#ff6600";
+      effectCtx.shadowBlur = 20;
+      effectCtx.fillStyle = fireColors[idx];
       effectCtx.beginPath();
-      effectCtx.fillStyle = p.color;
+      effectCtx.arc(p.x, p.y, Math.max(0.5, p.size), 0, Math.PI * 2);
+      effectCtx.fill();
+      effectCtx.shadowBlur = 0;
+      continue;
+    }
+
+    if (p.kind === "ember") {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy -= 0.04;
+      p.vx *= 0.99;
+      p.life -= 1;
+      effectCtx.globalAlpha = t * 0.9;
+      effectCtx.shadowColor = "#ff8822";
+      effectCtx.shadowBlur = 8;
+      effectCtx.fillStyle = t > 0.5 ? "#ffdd55" : "#ff6622";
+      effectCtx.beginPath();
       effectCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
       effectCtx.fill();
       effectCtx.shadowBlur = 0;
+      continue;
     }
+
+    if (p.kind === "frost") {
+      p.vx *= p.friction;
+      p.vy *= p.friction;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 1;
+      effectCtx.globalAlpha = t;
+      effectCtx.shadowColor = "#73d7f2";
+      effectCtx.shadowBlur = 14;
+      effectCtx.fillStyle = p.color;
+      effectCtx.beginPath();
+      effectCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      effectCtx.fill();
+      effectCtx.shadowBlur = 0;
+      continue;
+    }
+
+    if (p.kind === "crystal") {
+      p.vx *= p.friction;
+      p.vy *= p.friction;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 1;
+      effectCtx.globalAlpha = t * 0.85;
+      effectCtx.strokeStyle = "#c8f0ff";
+      effectCtx.shadowColor = "#73d7f2";
+      effectCtx.shadowBlur = 10;
+      effectCtx.lineWidth = 1.5;
+      effectCtx.save();
+      effectCtx.translate(p.x, p.y);
+      for (let arm = 0; arm < 6; arm++) {
+        effectCtx.save();
+        effectCtx.rotate((arm / 6) * Math.PI * 2);
+        effectCtx.beginPath();
+        effectCtx.moveTo(0, 0);
+        effectCtx.lineTo(0, p.size);
+        effectCtx.stroke();
+        effectCtx.restore();
+      }
+      effectCtx.restore();
+      effectCtx.shadowBlur = 0;
+      continue;
+    }
+
+    if (p.kind === "bolt") {
+      p.life -= 1;
+      if (p.life % 3 !== 0) continue; // flicker like real lightning
+      effectCtx.globalAlpha = t * 0.9;
+      effectCtx.strokeStyle = p.color;
+      effectCtx.shadowColor = "#ffffff";
+      effectCtx.shadowBlur = 16;
+      effectCtx.lineWidth = 2;
+      effectCtx.beginPath();
+      let bx = p.x, by = p.y;
+      const segLen = p.len / p.segments;
+      effectCtx.moveTo(bx, by);
+      for (let s = 0; s < p.segments; s++) {
+        bx += Math.cos(p.angle) * segLen + (Math.random() - 0.5) * 28;
+        by += Math.sin(p.angle) * segLen + (Math.random() - 0.5) * 28;
+        effectCtx.lineTo(bx, by);
+      }
+      effectCtx.stroke();
+      effectCtx.shadowBlur = 0;
+      continue;
+    }
+
+    if (p.kind === "spark") {
+      p.vx += (Math.random() - 0.5) * p.wobble;
+      p.vy += (Math.random() - 0.5) * p.wobble;
+      p.vx *= 0.92;
+      p.vy *= 0.92;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 1;
+      effectCtx.globalAlpha = t;
+      effectCtx.shadowColor = p.color;
+      effectCtx.shadowBlur = 12;
+      effectCtx.fillStyle = p.color;
+      effectCtx.beginPath();
+      effectCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      effectCtx.fill();
+      effectCtx.shadowBlur = 0;
+      continue;
+    }
+
+    if (p.kind === "heal") {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy -= 0.02; // gentle upward drift
+      p.vx *= 0.98;
+      p.life -= 1;
+      effectCtx.globalAlpha = t;
+      effectCtx.shadowColor = "#65db7d";
+      effectCtx.shadowBlur = 15;
+      effectCtx.fillStyle = p.color;
+      effectCtx.beginPath();
+      effectCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      effectCtx.fill();
+      effectCtx.shadowBlur = 0;
+      continue;
+    }
+
+    // default (fallback for any unlabeled particle)
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.035;
+    p.life -= 1;
+    effectCtx.globalAlpha = t;
+    effectCtx.shadowColor = p.color;
+    effectCtx.shadowBlur = 18;
+    effectCtx.fillStyle = p.color;
+    effectCtx.beginPath();
+    effectCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    effectCtx.fill();
+    effectCtx.shadowBlur = 0;
   }
+
   effectCtx.globalAlpha = 1;
   requestAnimationFrame(animateEffects);
 }
