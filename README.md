@@ -4,6 +4,15 @@ A local browser-based system for running a tabletop dungeon crawl with projected
 
 ## Start
 
+Easy Windows launch:
+
+```powershell
+.\setup.ps1
+.\start.ps1
+```
+
+Manual launch:
+
 ```powershell
 python server.py
 ```
@@ -27,6 +36,8 @@ Put the projector browser window on the projector display, then click **Fullscre
 ## AI Setup
 
 Rotate any key that was pasted into chat before using it.
+
+The repository includes `secrets.env.example`, but the real `secrets.env` stays local and is ignored by Git. Use `setup.ps1` after downloading or cloning the repo to create it safely on that computer.
 
 Option 1, current PowerShell session:
 
