@@ -34,7 +34,7 @@ const state = {
   calibrationPoints: [],
   currentMap: "",
   lastEffect: "",
-  detectedThisSecond: 0,
+
   lastPieceBroadcast: 0,
 };
 
@@ -52,8 +52,12 @@ function broadcast(type, payload = {}) {
 
 window.addEventListener("storage", (event) => {
   if (event.key !== "dnd-projector-event" || !event.newValue) return;
-  const message = JSON.parse(event.newValue);
-  handleMessage(message.type, message.payload);
+  try {
+    const message = JSON.parse(event.newValue);
+    handleMessage(message.type, message.payload);
+  } catch {
+    // ignore malformed storage values from other tabs
+  }
 });
 
 function handleMessage(type, payload) {
@@ -255,10 +259,17 @@ function pieceVitals(color, count) {
   return { health: 100, mana: 70 };
 }
 
-function pruneStaleDetectedPieces() {
+function refreshDetectedPieces() {
+  const removeCutoff = Date.now() - 8000;
+  state.tokens = state.tokens.filter((token) => {
+    if (token.detected && token.lastSeen < removeCutoff) {
+      tokenLayer.querySelector(`[data-token-id="${token.id}"]`)?.remove();
+      return false;
+    }
+    return true;
+  });
   for (const token of state.tokens) {
-    if (!token.detected) continue;
-    renderToken(token);
+    if (token.detected) renderToken(token);
   }
 }
 
@@ -451,15 +462,6 @@ menuRing.addEventListener("click", (event) => {
   broadcast("effect", { effect: button.dataset.effect, x, y });
 });
 
-for (const button of menuRing.querySelectorAll("button[data-effect]")) {
-  button.addEventListener("click", (event) => {
-    event.stopPropagation();
-    const x = parseFloat(menuRing.style.left);
-    const y = parseFloat(menuRing.style.top);
-    triggerEffect(button.dataset.effect, x, y);
-    broadcast("effect", { effect: button.dataset.effect, x, y });
-  });
-}
 
 function bindControls() {
   const videoInput = document.getElementById("videoInput");
@@ -782,7 +784,7 @@ function trackCamera() {
       state.lastPieceBroadcast = now;
     }
   } else {
-    pruneStaleDetectedPieces();
+    refreshDetectedPieces();
   }
 
   state.previousFrame = frame;
@@ -800,9 +802,41 @@ function classifyPieceColor(r, g, b) {
   return "";
 }
 
-function cameraToBoard(x, y) {
-  return {
-    x: Math.min(100, Math.max(0, x * 100)),
-    y: Math.min(100, Math.max(0, y * 100)),
-  };
+function cameraToBoard(nx, ny) {
+  if (state.calibrationPoints.length < 4) {
+    return { x: Math.min(100, Math.max(0, nx * 100)), y: Math.min(100, Math.max(0, ny * 100)) };
+  }
+
+  // Sort the 4 tapped corners into top-left, top-right, bottom-left, bottom-right
+  const pts = [...state.calibrationPoints].sort((a, b) => a.y - b.y);
+  const top = pts.slice(0, 2).sort((a, b) => a.x - b.x);
+  const bot = pts.slice(2).sort((a, b) => a.x - b.x);
+  const tl = top[0], tr = top[1], bl = bot[0], br = bot[1];
+
+  // Iterative inverse bilinear interpolation: find (s,t) in [0,1] such that
+  // the bilinear blend of the four corners equals the camera point (nx,ny).
+  // s=0→left edge, s=1→right edge; t=0→top edge, t=1→bottom edge.
+  let s = 0.5, t = 0.5;
+  for (let i = 0; i < 20; i++) {
+    const px = (1 - s) * (1 - t) * tl.x + s * (1 - t) * tr.x + (1 - s) * t * bl.x + s * t * br.x;
+    const py = (1 - s) * (1 - t) * tl.y + s * (1 - t) * tr.y + (1 - s) * t * bl.y + s * t * br.y;
+    const ex = px - nx;
+    const ey = py - ny;
+    if (ex * ex + ey * ey < 1e-10) break;
+
+    const dpxds = (1 - t) * (tr.x - tl.x) + t * (br.x - bl.x);
+    const dpyds = (1 - t) * (tr.y - tl.y) + t * (br.y - bl.y);
+    const dpxdt = (1 - s) * (bl.x - tl.x) + s * (br.x - tr.x);
+    const dpydt = (1 - s) * (bl.y - tl.y) + s * (br.y - tr.y);
+
+    const det = dpxds * dpydt - dpyds * dpxdt;
+    if (Math.abs(det) < 1e-10) break;
+
+    s -= (dpydt * ex - dpxdt * ey) / det;
+    t -= (dpxds * ey - dpyds * ex) / det;
+    s = Math.max(0, Math.min(1, s));
+    t = Math.max(0, Math.min(1, t));
+  }
+
+  return { x: s * 100, y: t * 100 };
 }
