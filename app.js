@@ -273,6 +273,8 @@ function refreshDetectedPieces() {
   }
 }
 
+setInterval(refreshDetectedPieces, 1000);
+
 function setActiveToolButton(tool) {
   for (const button of document.querySelectorAll("button[data-tool]")) {
     button.classList.toggle("active", button.dataset.tool === tool);
