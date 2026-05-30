@@ -812,42 +812,205 @@ function showRollToast(roll) {
   const toast = document.createElement("div");
   toast.className = "roll-toss";
   toast.innerHTML = `
-    <div class="dice-scatter">
-      ${diceFaces.map((face, index) => tossedDieMarkup(face, roll.sides, index)).join("")}
-    </div>
+    <canvas class="dice-canvas"></canvas>
     <div class="roll-summary">
       <span class="roll-total">${roll.total}</span>
       <span class="roll-formula">${roll.formula} ${roll.detail || ""}</span>
     </div>
   `;
   stage.appendChild(toast);
-  setTimeout(() => toast.remove(), 3800);
+  const canvas = toast.querySelector(".dice-canvas");
+  animate3dDice(canvas, diceFaces.map((face, index) => ({ face, sides: roll.sides, index })));
+  setTimeout(() => toast.remove(), 4300);
 }
 
-function tossedDieMarkup(face, sides, index) {
-  const startX = index % 2 === 0 ? "-44vw" : "44vw";
-  const startY = `${-32 - (index % 3) * 8}vh`;
-  const landX = `${(index - 2.5) * 68}px`;
-  const landY = `${((index % 3) - 1) * 28}px`;
-  const spin = `${540 + index * 137}deg`;
-  return `
-    <span
-      class="tossed-die die-d${sides}"
-      style="--start-x:${startX}; --start-y:${startY}; --land-x:${landX}; --land-y:${landY}; --spin:${spin}; --delay:${index * 70}ms"
-    >
-      <span class="die-shadow"></span>
-      <span class="poly-die">
-        <span class="poly-core">
-          <span class="poly-facet facet-a"></span>
-          <span class="poly-facet facet-b"></span>
-          <span class="poly-facet facet-c"></span>
-          <span class="poly-facet facet-d"></span>
-          <span class="die-number">${face}</span>
-        </span>
-      </span>
-      <span class="die-impact"></span>
-    </span>
-  `;
+function animate3dDice(canvas, dice) {
+  const ctx = canvas.getContext("2d");
+  const bounds = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.floor(bounds.width * dpr));
+  canvas.height = Math.max(1, Math.floor(bounds.height * dpr));
+  ctx.scale(dpr, dpr);
+
+  const start = performance.now();
+  const duration = 3300;
+  const models = dice.map((die) => {
+    const spread = dice.length > 1 ? (die.index - (dice.length - 1) / 2) * 82 : 0;
+    return {
+      ...die,
+      geometry: dieGeometry(die.sides),
+      startX: die.index % 2 === 0 ? -bounds.width * 0.34 : bounds.width * 1.34,
+      startY: -90 - (die.index % 3) * 36,
+      landX: bounds.width / 2 + spread,
+      landY: bounds.height / 2 + ((die.index % 3) - 1) * 28,
+      spinX: 5.2 + die.index * 0.7,
+      spinY: 6.1 + die.index * 0.5,
+      spinZ: 3.4 + die.index * 0.37,
+    };
+  });
+
+  function frame(now) {
+    const t = Math.min(1, (now - start) / duration);
+    ctx.clearRect(0, 0, bounds.width, bounds.height);
+    for (const die of models) draw3dDie(ctx, die, t);
+    if (t < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+function dieGeometry(sides) {
+  if (sides === 4) return tetrahedron();
+  if (sides === 6) return cube();
+  if (sides === 8) return octahedron();
+  if (sides === 10 || sides === 100) return bipyramid(10);
+  return icosahedron();
+}
+
+function tetrahedron() {
+  const v = [[1, 1, 1], [-1, -1, 1], [-1, 1, -1], [1, -1, -1]];
+  return { vertices: v, faces: [[0, 1, 2], [0, 3, 1], [0, 2, 3], [1, 3, 2]] };
+}
+
+function cube() {
+  const v = [[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
+  return { vertices: v, faces: [[0,1,2,3],[4,7,6,5],[0,4,5,1],[1,5,6,2],[2,6,7,3],[3,7,4,0]] };
+}
+
+function octahedron() {
+  const v = [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+  return { vertices: v, faces: [[0,2,4],[2,1,4],[1,3,4],[3,0,4],[2,0,5],[1,2,5],[3,1,5],[0,3,5]] };
+}
+
+function bipyramid(points) {
+  const vertices = [[0, 0, 1.25], [0, 0, -1.25]];
+  for (let i = 0; i < points; i += 1) {
+    const a = (i / points) * Math.PI * 2;
+    vertices.push([Math.cos(a), Math.sin(a), 0]);
+  }
+  const faces = [];
+  for (let i = 0; i < points; i += 1) {
+    const a = 2 + i;
+    const b = 2 + ((i + 1) % points);
+    faces.push([0, a, b], [1, b, a]);
+  }
+  return { vertices, faces };
+}
+
+function icosahedron() {
+  const phi = (1 + Math.sqrt(5)) / 2;
+  const v = [
+    [-1, phi, 0], [1, phi, 0], [-1, -phi, 0], [1, -phi, 0],
+    [0, -1, phi], [0, 1, phi], [0, -1, -phi], [0, 1, -phi],
+    [phi, 0, -1], [phi, 0, 1], [-phi, 0, -1], [-phi, 0, 1],
+  ].map(normalize3);
+  const faces = [
+    [0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],
+    [1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],
+    [3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],
+    [4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1],
+  ];
+  return { vertices: v, faces };
+}
+
+function draw3dDie(ctx, die, t) {
+  const ease = 1 - Math.pow(1 - t, 3);
+  const bounce = Math.sin(Math.min(1, t * 1.28) * Math.PI) * 110 * (1 - t);
+  const x = lerp(die.startX, die.landX, ease);
+  const y = lerp(die.startY, die.landY, ease) - bounce;
+  const scale = 48 + Math.sin(t * Math.PI) * 8;
+  const rx = die.spinX * (1 - ease) + 0.45;
+  const ry = die.spinY * (1 - ease) + 0.35;
+  const rz = die.spinZ * (1 - ease) + 0.2;
+  const verts = die.geometry.vertices.map((p) => rotate3(p, rx, ry, rz));
+  const projected = verts.map((p) => project3(p, x, y, scale));
+  const faces = die.geometry.faces.map((face) => {
+    const pts = face.map((i) => verts[i]);
+    const z = pts.reduce((sum, p) => sum + p[2], 0) / pts.length;
+    const normal = faceNormal(pts[0], pts[1], pts[2]);
+    return { face, z, normal };
+  }).sort((a, b) => a.z - b.z);
+
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, t * 5);
+  drawDieShadow(ctx, x, die.landY + 58, t);
+  for (const item of faces) {
+    if (item.normal[2] < -0.2) continue;
+    drawFace(ctx, item.face.map((i) => projected[i]), item.normal, die.sides);
+  }
+  drawDieNumber(ctx, String(die.face), x, y, scale, die.sides);
+  ctx.restore();
+}
+
+function drawFace(ctx, pts, normal, sides) {
+  const light = normalize3([-0.35, -0.55, 1]);
+  const intensity = Math.max(0.18, dot3(normalize3(normal), light));
+  const hue = sides === 100 ? [72, 143, 186] : [206, 105, 54];
+  const fill = `rgb(${Math.round(hue[0] * intensity + 34)}, ${Math.round(hue[1] * intensity + 22)}, ${Math.round(hue[2] * intensity + 18)})`;
+  ctx.beginPath();
+  pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.strokeStyle = "rgba(255, 239, 190, 0.72)";
+  ctx.lineWidth = 1.5;
+  ctx.fill();
+  ctx.stroke();
+}
+
+function drawDieNumber(ctx, text, x, y, scale, sides) {
+  ctx.font = `900 ${Math.max(20, scale * 0.52)}px Arial`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = "rgba(0, 0, 0, 0.62)";
+  ctx.fillStyle = sides === 100 ? "#e9f7ff" : "#fff4d8";
+  ctx.strokeText(text, x, y);
+  ctx.fillText(text, x, y);
+}
+
+function drawDieShadow(ctx, x, y, t) {
+  ctx.save();
+  ctx.globalAlpha = 0.18 + t * 0.32;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.58)";
+  ctx.beginPath();
+  ctx.ellipse(x, y, 58, 16, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function project3(p, x, y, scale) {
+  const distance = 4.2;
+  const perspective = distance / (distance - p[2]);
+  return { x: x + p[0] * scale * perspective, y: y + p[1] * scale * perspective };
+}
+
+function rotate3(p, rx, ry, rz) {
+  let [x, y, z] = p;
+  let cy = Math.cos(rx), sy = Math.sin(rx);
+  [y, z] = [y * cy - z * sy, y * sy + z * cy];
+  cy = Math.cos(ry); sy = Math.sin(ry);
+  [x, z] = [x * cy + z * sy, -x * sy + z * cy];
+  cy = Math.cos(rz); sy = Math.sin(rz);
+  [x, y] = [x * cy - y * sy, x * sy + y * cy];
+  return [x, y, z];
+}
+
+function faceNormal(a, b, c) {
+  const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+  const v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+  return [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+}
+
+function normalize3(p) {
+  const len = Math.hypot(p[0], p[1], p[2]) || 1;
+  return [p[0] / len, p[1] / len, p[2] / len];
+}
+
+function dot3(a, b) {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
 }
 
 function performRoll(sides, mode = "normal") {
