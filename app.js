@@ -830,32 +830,24 @@ function tossedDieMarkup(face, sides, index) {
   const landX = `${(index - 2.5) * 68}px`;
   const landY = `${((index % 3) - 1) * 28}px`;
   const spin = `${540 + index * 137}deg`;
-  const faces = dieFaceValues(face, sides);
   return `
     <span
       class="tossed-die die-d${sides}"
       style="--start-x:${startX}; --start-y:${startY}; --land-x:${landX}; --land-y:${landY}; --spin:${spin}; --delay:${index * 70}ms"
     >
       <span class="die-shadow"></span>
-      <span class="die-cube">
-        <span class="cube-face cube-front">${faces[0]}</span>
-        <span class="cube-face cube-back">${faces[1]}</span>
-        <span class="cube-face cube-right">${faces[2]}</span>
-        <span class="cube-face cube-left">${faces[3]}</span>
-        <span class="cube-face cube-top">${faces[4]}</span>
-        <span class="cube-face cube-bottom">${faces[5]}</span>
+      <span class="poly-die">
+        <span class="poly-core">
+          <span class="poly-facet facet-a"></span>
+          <span class="poly-facet facet-b"></span>
+          <span class="poly-facet facet-c"></span>
+          <span class="poly-facet facet-d"></span>
+          <span class="die-number">${face}</span>
+        </span>
       </span>
       <span class="die-impact"></span>
     </span>
   `;
-}
-
-function dieFaceValues(face, sides) {
-  const values = [face];
-  for (let i = 1; i < 6; i += 1) {
-    values.push(((face + i * 3 - 1) % sides) + 1);
-  }
-  return values;
 }
 
 function performRoll(sides, mode = "normal") {

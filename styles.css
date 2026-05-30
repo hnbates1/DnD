@@ -563,58 +563,110 @@ h2 {
   animation: dieTossPath 1.68s cubic-bezier(0.16, 0.88, 0.34, 1.12) var(--delay) forwards;
 }
 
-.die-cube,
+.poly-die,
+.poly-core,
+.poly-facet,
+.die-number,
 .die-shadow,
 .die-impact {
   position: absolute;
   inset: 0;
 }
 
-.die-cube {
+.poly-die {
   transform-style: preserve-3d;
-  animation: dieCubeSpin 1.68s cubic-bezier(0.2, 0.74, 0.34, 1) var(--delay) forwards;
+  animation: diePolySpin 1.68s cubic-bezier(0.2, 0.74, 0.34, 1) var(--delay) forwards;
 }
 
-.cube-face {
+.poly-core {
+  clip-path: var(--die-shape);
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.42), transparent 21%),
+    linear-gradient(135deg, #f9df9a 0%, #c66b38 48%, #401912 100%);
+  box-shadow:
+    inset 0 2px 13px rgba(255, 255, 255, 0.28),
+    inset 13px -16px 24px rgba(0, 0, 0, 0.38),
+    0 0 0 2px rgba(255, 248, 218, 0.78);
+}
+
+.poly-core::after {
+  content: "";
   position: absolute;
   inset: 0;
+  clip-path: var(--die-shape);
+  background:
+    linear-gradient(45deg, transparent 0 42%, rgba(255, 255, 255, 0.16) 43% 45%, transparent 46%),
+    linear-gradient(135deg, transparent 0 46%, rgba(0, 0, 0, 0.2) 47% 49%, transparent 50%),
+    linear-gradient(90deg, transparent 0 50%, rgba(255, 238, 188, 0.16) 51% 52%, transparent 53%);
+}
+
+.poly-facet {
+  clip-path: polygon(50% 50%, 100% 0, 100% 100%);
+  background: rgba(255, 255, 255, 0.12);
+  mix-blend-mode: screen;
+}
+
+.facet-a { transform: rotate(0deg); }
+.facet-b { transform: rotate(72deg); opacity: 0.52; }
+.facet-c { transform: rotate(144deg); opacity: 0.34; }
+.facet-d { transform: rotate(216deg); opacity: 0.26; }
+
+.die-number {
   display: grid;
   place-items: center;
-  border: 2px solid rgba(255, 248, 218, 0.9);
-  border-radius: 12px;
-  background:
-    radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.42), transparent 22%),
-    linear-gradient(135deg, #f7d889 0%, #be6235 52%, #3a1812 100%);
   color: #fff7df;
   font-size: 30px;
   font-weight: 900;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.72);
-  box-shadow:
-    inset 0 2px 13px rgba(255, 255, 255, 0.25),
-    inset 11px -14px 22px rgba(0, 0, 0, 0.34);
-  backface-visibility: hidden;
+  z-index: 2;
 }
 
-.cube-front { transform: translateZ(43px); }
-.cube-back { transform: rotateY(180deg) translateZ(43px); }
-.cube-right { transform: rotateY(90deg) translateZ(43px); }
-.cube-left { transform: rotateY(-90deg) translateZ(43px); }
-.cube-top { transform: rotateX(90deg) translateZ(43px); }
-.cube-bottom { transform: rotateX(-90deg) translateZ(43px); }
-
-.cube-top,
-.cube-right {
-  background:
-    radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.38), transparent 22%),
-    linear-gradient(135deg, #ffeba8 0%, #cf7740 58%, #472016 100%);
+.die-d4 {
+  --die-shape: polygon(50% 2%, 97% 92%, 3% 92%);
 }
 
-.cube-back,
-.cube-left,
-.cube-bottom {
+.die-d4 .die-number {
+  padding-top: 16px;
+}
+
+.die-d6 {
+  --die-shape: polygon(8% 8%, 92% 8%, 92% 92%, 8% 92%);
+}
+
+.die-d6 .poly-core {
+  border-radius: 13px;
+  clip-path: none;
+}
+
+.die-d6 .poly-core::after {
+  clip-path: none;
+  border-radius: 13px;
+}
+
+.die-d8 {
+  --die-shape: polygon(50% 0%, 96% 50%, 50% 100%, 4% 50%);
+}
+
+.die-d10 {
+  --die-shape: polygon(50% 0%, 90% 25%, 76% 100%, 24% 100%, 10% 25%);
+}
+
+.die-d12 {
+  --die-shape: polygon(50% 0%, 82% 12%, 100% 42%, 94% 75%, 68% 100%, 32% 100%, 6% 75%, 0% 42%, 18% 12%);
+}
+
+.die-d20 {
+  --die-shape: polygon(50% 0%, 88% 13%, 100% 50%, 82% 84%, 50% 100%, 18% 84%, 0% 50%, 12% 13%);
+}
+
+.die-d100 {
+  --die-shape: polygon(50% 0%, 86% 10%, 100% 38%, 92% 72%, 66% 100%, 34% 100%, 8% 72%, 0% 38%, 14% 10%);
+}
+
+.die-d100 .poly-core {
   background:
-    radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.24), transparent 20%),
-    linear-gradient(135deg, #c77a45 0%, #773021 58%, #210f0c 100%);
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.42), transparent 21%),
+    linear-gradient(135deg, #d9efff 0%, #4f8db5 48%, #183040 100%);
 }
 
 .die-shadow {
@@ -696,7 +748,7 @@ h2 {
   }
 }
 
-@keyframes dieCubeSpin {
+@keyframes diePolySpin {
   0% { transform: rotateX(70deg) rotateY(-40deg) rotateZ(0deg); }
   32% { transform: rotateX(430deg) rotateY(230deg) rotateZ(calc(var(--spin) * 0.45)); }
   56% { transform: rotateX(760deg) rotateY(510deg) rotateZ(var(--spin)); }
