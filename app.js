@@ -24,6 +24,11 @@ const playerSelect = document.getElementById("playerSelect");
 const selectedTokenBadge = document.getElementById("selectedTokenBadge");
 const healthInput = document.getElementById("healthInput");
 const manaInput = document.getElementById("manaInput");
+const diceTotalBadge = document.getElementById("diceTotalBadge");
+const diceResult = document.getElementById("diceResult");
+const diceHistory = document.getElementById("diceHistory");
+const diceCountInput = document.getElementById("diceCountInput");
+const diceModInput = document.getElementById("diceModInput");
 
 const state = {
   tool: "token",
@@ -75,6 +80,7 @@ function handleMessage(type, payload) {
   if (type === "token") addToken(payload.x, payload.y, payload);
   if (type === "piece") upsertDetectedPiece(payload);
   if (type === "tokenStatus") updateTokenStatus(payload.id, payload, false);
+  if (type === "roll") showRollToast(payload);
   if (type === "fog") setFog(payload.enabled);
   if (type === "reveal") revealAt(payload.x, payload.y);
   if (type === "menu") showMenu(payload.x, payload.y);
@@ -737,6 +743,88 @@ function clearOverlays() {
   refreshPlayerSelect();
 }
 
+function randomInt(max) {
+  return Math.floor(Math.random() * max) + 1;
+}
+
+function clampNumberInput(input, fallback, min, max) {
+  const value = Number(input?.value);
+  if (!Number.isFinite(value)) return fallback;
+  return Math.max(min, Math.min(max, Math.trunc(value)));
+}
+
+function rollDice(sides, options = {}) {
+  const count = options.count ?? clampNumberInput(diceCountInput, 1, 1, 20);
+  const modifier = options.modifier ?? clampNumberInput(diceModInput, 0, -99, 99);
+  const mode = options.mode || "normal";
+  let rolls = [];
+  let kept = [];
+
+  if (sides === 20 && mode !== "normal") {
+    rolls = [randomInt(20), randomInt(20)];
+    kept = [mode === "advantage" ? Math.max(...rolls) : Math.min(...rolls)];
+  } else {
+    rolls = Array.from({ length: count }, () => randomInt(sides));
+    kept = rolls;
+  }
+
+  const subtotal = kept.reduce((sum, value) => sum + value, 0);
+  const total = subtotal + modifier;
+  const formula = mode === "normal"
+    ? `${count}d${sides}${modifier ? signedModifier(modifier) : ""}`
+    : `d20 ${mode}${modifier ? signedModifier(modifier) : ""}`;
+  return {
+    sides,
+    count,
+    modifier,
+    mode,
+    rolls,
+    kept,
+    total,
+    formula,
+    detail: rollDetail(rolls, kept, modifier, mode),
+  };
+}
+
+function signedModifier(value) {
+  return value > 0 ? `+${value}` : `${value}`;
+}
+
+function rollDetail(rolls, kept, modifier, mode) {
+  const base = mode === "normal" ? `[${rolls.join(", ")}]` : `[${rolls.join(", ")} keep ${kept[0]}]`;
+  return modifier ? `${base} ${signedModifier(modifier)}` : base;
+}
+
+function renderRoll(roll) {
+  diceTotalBadge.textContent = String(roll.total);
+  diceTotalBadge.classList.add("ready");
+  diceResult.textContent = `${roll.formula}: ${roll.total}`;
+  const line = document.createElement("div");
+  line.className = "roll-line";
+  line.textContent = `${roll.formula} = ${roll.total} ${roll.detail}`;
+  diceHistory.prepend(line);
+  while (diceHistory.children.length > 8) diceHistory.lastElementChild.remove();
+}
+
+function showRollToast(roll) {
+  if (!roll) return;
+  const toast = document.createElement("div");
+  toast.className = "roll-toast";
+  toast.innerHTML = `
+    <span class="roll-total">${roll.total}</span>
+    <span class="roll-formula">${roll.formula} ${roll.detail || ""}</span>
+  `;
+  stage.appendChild(toast);
+  setTimeout(() => toast.remove(), 2700);
+}
+
+function performRoll(sides, mode = "normal") {
+  const roll = rollDice(sides, { mode });
+  renderRoll(roll);
+  showRollToast(roll);
+  broadcast("roll", roll);
+}
+
 stage.addEventListener("click", (event) => {
   const point = stagePoint(event);
   if (state.tool === "token") {
@@ -840,6 +928,7 @@ function bindControls() {
   });
 
   bindPlayerStatusControls();
+  bindDiceControls();
 
   document.getElementById("cameraButton").addEventListener("click", startCamera);
   document.getElementById("calibrateButton").addEventListener("click", () => {
@@ -890,6 +979,21 @@ function bindPlayerStatusControls() {
     if (token) updateTokenStatus(token.id, { mana: 100 });
   });
   refreshPlayerSelect();
+}
+
+function bindDiceControls() {
+  if (!diceResult || !diceHistory) return;
+  for (const button of document.querySelectorAll("button[data-die]")) {
+    button.addEventListener("click", () => performRoll(Number(button.dataset.die)));
+  }
+  document.getElementById("advantageButton").addEventListener("click", () => performRoll(20, "advantage"));
+  document.getElementById("disadvantageButton").addEventListener("click", () => performRoll(20, "disadvantage"));
+  document.getElementById("clearDiceButton").addEventListener("click", () => {
+    diceHistory.innerHTML = "";
+    diceResult.textContent = "Choose a die";
+    diceTotalBadge.textContent = "Ready";
+    diceTotalBadge.classList.remove("ready");
+  });
 }
 
 async function bindAiControls() {

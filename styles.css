@@ -438,7 +438,8 @@ h2 {
 
 .tool-grid,
 .spell-grid,
-.quick-grid {
+.quick-grid,
+.dice-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -473,6 +474,102 @@ h2 {
 
 .mana-control input:focus {
   outline: 2px solid rgba(74, 163, 255, 0.45);
+}
+
+.dice-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.dice-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.dice-options label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.dice-options input {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #111518;
+  color: var(--text);
+  padding: 8px;
+  text-align: center;
+}
+
+.dice-result {
+  margin-top: 10px;
+  border: 1px solid rgba(217, 179, 93, 0.36);
+  border-radius: 6px;
+  background: rgba(217, 179, 93, 0.07);
+  color: #fff4d8;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 11px 12px;
+  text-align: center;
+}
+
+.dice-history {
+  display: grid;
+  gap: 6px;
+  max-height: 150px;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+
+.roll-line {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+  font-size: 13px;
+  padding: 7px 8px;
+}
+
+.roll-toast {
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  top: 50%;
+  min-width: 240px;
+  transform: translate(-50%, -50%) scale(0.92);
+  border: 1px solid rgba(255, 244, 216, 0.48);
+  border-radius: 8px;
+  background: rgba(9, 11, 12, 0.82);
+  color: #fff4d8;
+  padding: 18px 22px;
+  text-align: center;
+  box-shadow: 0 0 42px rgba(217, 179, 93, 0.28), 0 18px 45px rgba(0, 0, 0, 0.44);
+  animation: rollToast 2.6s ease forwards;
+}
+
+.roll-toast .roll-total {
+  display: block;
+  font-size: 56px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.roll-toast .roll-formula {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+@keyframes rollToast {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.72) rotate(-2deg); }
+  12% { opacity: 1; transform: translate(-50%, -50%) scale(1.06) rotate(1deg); }
+  70% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -55%) scale(0.96); }
 }
 
 .ai-panel textarea {

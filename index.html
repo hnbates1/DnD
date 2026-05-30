@@ -108,6 +108,39 @@
           </div>
         </div>
 
+        <div class="panel dice-panel">
+          <div class="panel-heading">
+            <h2>Dice</h2>
+            <span id="diceTotalBadge" class="pill">Ready</span>
+          </div>
+          <div class="dice-grid">
+            <button data-die="4">d4</button>
+            <button data-die="6">d6</button>
+            <button data-die="8">d8</button>
+            <button data-die="10">d10</button>
+            <button data-die="12">d12</button>
+            <button data-die="20">d20</button>
+            <button data-die="100">d100</button>
+            <button id="clearDiceButton">Clear</button>
+          </div>
+          <div class="dice-options">
+            <label>
+              Count
+              <input id="diceCountInput" type="number" min="1" max="20" value="1">
+            </label>
+            <label>
+              Mod
+              <input id="diceModInput" type="number" min="-99" max="99" value="0">
+            </label>
+          </div>
+          <div class="button-row">
+            <button id="advantageButton">Advantage</button>
+            <button id="disadvantageButton">Disadvantage</button>
+          </div>
+          <div id="diceResult" class="dice-result">Choose a die</div>
+          <div id="diceHistory" class="dice-history" aria-live="polite"></div>
+        </div>
+
         <div class="panel ai-panel">
           <div class="panel-heading">
             <h2>AI Table Assistant</h2>
