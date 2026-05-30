@@ -835,6 +835,8 @@ function tossedDieMarkup(face, sides, index) {
       class="tossed-die die-d${sides}"
       style="--start-x:${startX}; --start-y:${startY}; --land-x:${landX}; --land-y:${landY}; --spin:${spin}; --delay:${index * 70}ms"
     >
+      <span class="die-trail"></span>
+      <span class="die-impact"></span>
       <span class="die-face">${face}</span>
     </span>
   `;
