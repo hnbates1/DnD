@@ -808,14 +808,36 @@ function renderRoll(roll) {
 
 function showRollToast(roll) {
   if (!roll) return;
+  const diceFaces = (roll.kept?.length ? roll.kept : roll.rolls || []).slice(0, 12);
   const toast = document.createElement("div");
-  toast.className = "roll-toast";
+  toast.className = "roll-toss";
   toast.innerHTML = `
-    <span class="roll-total">${roll.total}</span>
-    <span class="roll-formula">${roll.formula} ${roll.detail || ""}</span>
+    <div class="dice-scatter">
+      ${diceFaces.map((face, index) => tossedDieMarkup(face, roll.sides, index)).join("")}
+    </div>
+    <div class="roll-summary">
+      <span class="roll-total">${roll.total}</span>
+      <span class="roll-formula">${roll.formula} ${roll.detail || ""}</span>
+    </div>
   `;
   stage.appendChild(toast);
-  setTimeout(() => toast.remove(), 2700);
+  setTimeout(() => toast.remove(), 3800);
+}
+
+function tossedDieMarkup(face, sides, index) {
+  const startX = index % 2 === 0 ? "-44vw" : "44vw";
+  const startY = `${-32 - (index % 3) * 8}vh`;
+  const landX = `${(index - 2.5) * 68}px`;
+  const landY = `${((index % 3) - 1) * 28}px`;
+  const spin = `${540 + index * 137}deg`;
+  return `
+    <span
+      class="tossed-die die-d${sides}"
+      style="--start-x:${startX}; --start-y:${startY}; --land-x:${landX}; --land-y:${landY}; --spin:${spin}; --delay:${index * 70}ms"
+    >
+      <span class="die-face">${face}</span>
+    </span>
+  `;
 }
 
 function performRoll(sides, mode = "normal") {
