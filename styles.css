@@ -188,6 +188,12 @@ button.active {
   opacity: 0.55;
 }
 
+.token.selected::after {
+  border-color: rgba(255, 248, 210, 0.84);
+  box-shadow: 0 0 24px rgba(217, 179, 93, 0.58);
+  opacity: 0.9;
+}
+
 .health-ring,
 .mana-ring,
 .piece-core {
@@ -419,7 +425,8 @@ h2 {
 .button-row,
 .tool-grid,
 .spell-grid,
-.quick-grid {
+.quick-grid,
+.stepper-row {
   display: grid;
   gap: 8px;
   margin-top: 10px;
@@ -433,6 +440,39 @@ h2 {
 .spell-grid,
 .quick-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.stat-control {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.stat-control label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.stepper-row {
+  grid-template-columns: 52px 44px minmax(58px, 1fr) 44px 52px;
+}
+
+.stepper-row input {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #111518;
+  color: var(--text);
+  padding: 8px;
+  text-align: center;
+}
+
+.health-control input:focus {
+  outline: 2px solid rgba(66, 214, 114, 0.45);
+}
+
+.mana-control input:focus {
+  outline: 2px solid rgba(74, 163, 255, 0.45);
 }
 
 .ai-panel textarea {

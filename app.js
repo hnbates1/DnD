@@ -20,6 +20,10 @@ const aiMode = document.getElementById("aiMode");
 const encounterNotes = document.getElementById("encounterNotes");
 const aiQuestion = document.getElementById("aiQuestion");
 const aiLog = document.getElementById("aiLog");
+const playerSelect = document.getElementById("playerSelect");
+const selectedTokenBadge = document.getElementById("selectedTokenBadge");
+const healthInput = document.getElementById("healthInput");
+const manaInput = document.getElementById("manaInput");
 
 const state = {
   tool: "token",
@@ -36,6 +40,7 @@ const state = {
   lastEffect: "",
 
   lastPieceBroadcast: 0,
+  selectedTokenId: "",
 };
 
 if (isProjector) {
@@ -69,6 +74,7 @@ function handleMessage(type, payload) {
   if (type === "effect") triggerEffect(payload.effect, payload.x, payload.y);
   if (type === "token") addToken(payload.x, payload.y, payload);
   if (type === "piece") upsertDetectedPiece(payload);
+  if (type === "tokenStatus") updateTokenStatus(payload.id, payload, false);
   if (type === "fog") setFog(payload.enabled);
   if (type === "reveal") revealAt(payload.x, payload.y);
   if (type === "menu") showMenu(payload.x, payload.y);
@@ -156,6 +162,7 @@ function renderToken(tokenData) {
 
   token.classList.toggle("detected", tokenData.detected);
   token.classList.toggle("stale", Date.now() - tokenData.lastSeen > 2500);
+  token.classList.toggle("selected", tokenData.id === state.selectedTokenId);
   token.style.left = `${tokenData.x}%`;
   token.style.top = `${tokenData.y}%`;
   token.style.setProperty("--hp", `${Math.max(0, Math.min(100, tokenData.health))}%`);
@@ -184,7 +191,96 @@ function addToken(x, y, overrides = {}) {
   const tokenData = tokenDefaults({ ...overrides, x, y });
   state.tokens.push(tokenData);
   renderToken(tokenData);
+  if (!state.selectedTokenId && !isProjector) selectToken(tokenData.id);
+  refreshPlayerSelect();
   return tokenData;
+}
+
+function tokenLabel(token, index) {
+  const source = token.detected ? token.color : "player";
+  return `${source.charAt(0).toUpperCase()}${source.slice(1)} ${index + 1}`;
+}
+
+function refreshPlayerSelect() {
+  if (!playerSelect) return;
+  const previous = playerSelect.value || state.selectedTokenId;
+  playerSelect.innerHTML = '<option value="">Select player</option>';
+  state.tokens.forEach((token, index) => {
+    const option = document.createElement("option");
+    option.value = token.id;
+    option.textContent = tokenLabel(token, index);
+    playerSelect.appendChild(option);
+  });
+  if (state.tokens.some((token) => token.id === previous)) {
+    playerSelect.value = previous;
+    state.selectedTokenId = previous;
+  } else if (state.tokens.length) {
+    playerSelect.value = state.tokens[0].id;
+    state.selectedTokenId = state.tokens[0].id;
+  } else {
+    state.selectedTokenId = "";
+  }
+  syncStatusInputs();
+}
+
+function selectedToken() {
+  return state.tokens.find((token) => token.id === state.selectedTokenId);
+}
+
+function selectToken(id) {
+  state.selectedTokenId = id || "";
+  if (playerSelect) playerSelect.value = state.selectedTokenId;
+  syncStatusInputs();
+  for (const token of state.tokens) renderToken(token);
+}
+
+function syncStatusInputs() {
+  const token = selectedToken();
+  if (selectedTokenBadge) {
+    selectedTokenBadge.textContent = token ? token.id.replace("camera-", "") : "No player";
+    selectedTokenBadge.classList.toggle("ready", Boolean(token));
+  }
+  if (!healthInput || !manaInput) return;
+  healthInput.disabled = !token;
+  manaInput.disabled = !token;
+  if (!token) {
+    healthInput.value = 100;
+    manaInput.value = 70;
+    return;
+  }
+  healthInput.value = Math.round(token.health);
+  manaInput.value = Math.round(token.mana);
+}
+
+function clampStat(value) {
+  return Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0));
+}
+
+function updateTokenStatus(id, changes, shouldBroadcast = true) {
+  const token = state.tokens.find((item) => item.id === id);
+  if (!token) return;
+  if (changes.health !== undefined) token.health = clampStat(Number(changes.health));
+  if (changes.mana !== undefined) token.mana = clampStat(Number(changes.mana));
+  if (changes.buffs) token.buffs = changes.buffs;
+  if (changes.debuffs) token.debuffs = changes.debuffs;
+  token.lastSeen = Date.now();
+  renderToken(token);
+  syncStatusInputs();
+  if (shouldBroadcast) {
+    broadcast("tokenStatus", {
+      id: token.id,
+      health: token.health,
+      mana: token.mana,
+      buffs: token.buffs,
+      debuffs: token.debuffs,
+    });
+  }
+}
+
+function adjustSelectedStat(stat, delta) {
+  const token = selectedToken();
+  if (!token) return;
+  updateTokenStatus(token.id, { [stat]: clampStat(Number(token[stat]) + delta) });
 }
 
 function upsertDetectedPiece(piece) {
@@ -261,9 +357,12 @@ function pieceVitals(color, count) {
 
 function refreshDetectedPieces() {
   const removeCutoff = Date.now() - 8000;
+  let changed = false;
   state.tokens = state.tokens.filter((token) => {
     if (token.detected && token.lastSeen < removeCutoff) {
       tokenLayer.querySelector(`[data-token-id="${token.id}"]`)?.remove();
+      if (state.selectedTokenId === token.id) state.selectedTokenId = "";
+      changed = true;
       return false;
     }
     return true;
@@ -271,6 +370,7 @@ function refreshDetectedPieces() {
   for (const token of state.tokens) {
     if (token.detected) renderToken(token);
   }
+  if (changed) refreshPlayerSelect();
 }
 
 setInterval(refreshDetectedPieces, 1000);
@@ -630,9 +730,11 @@ animateEffects();
 function clearOverlays() {
   tokenLayer.innerHTML = "";
   state.tokens = [];
+  state.selectedTokenId = "";
   state.particles = [];
   setFog(false);
   hideMenu();
+  refreshPlayerSelect();
 }
 
 stage.addEventListener("click", (event) => {
@@ -737,6 +839,8 @@ function bindControls() {
     broadcast("clear");
   });
 
+  bindPlayerStatusControls();
+
   document.getElementById("cameraButton").addEventListener("click", startCamera);
   document.getElementById("calibrateButton").addEventListener("click", () => {
     state.calibrating = true;
@@ -748,6 +852,45 @@ function bindControls() {
 }
 
 bindControls();
+
+function bindPlayerStatusControls() {
+  if (!playerSelect || !healthInput || !manaInput) return;
+  playerSelect.addEventListener("change", () => selectToken(playerSelect.value));
+  healthInput.addEventListener("change", () => {
+    const token = selectedToken();
+    if (token) updateTokenStatus(token.id, { health: healthInput.value });
+  });
+  healthInput.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    const token = selectedToken();
+    if (token) updateTokenStatus(token.id, { health: healthInput.value });
+  });
+  manaInput.addEventListener("change", () => {
+    const token = selectedToken();
+    if (token) updateTokenStatus(token.id, { mana: manaInput.value });
+  });
+  manaInput.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    const token = selectedToken();
+    if (token) updateTokenStatus(token.id, { mana: manaInput.value });
+  });
+
+  for (const button of document.querySelectorAll("button[data-stat][data-delta]")) {
+    button.addEventListener("click", () => {
+      adjustSelectedStat(button.dataset.stat, Number(button.dataset.delta));
+    });
+  }
+
+  document.getElementById("fullHealthButton").addEventListener("click", () => {
+    const token = selectedToken();
+    if (token) updateTokenStatus(token.id, { health: 100 });
+  });
+  document.getElementById("fullManaButton").addEventListener("click", () => {
+    const token = selectedToken();
+    if (token) updateTokenStatus(token.id, { mana: 100 });
+  });
+  refreshPlayerSelect();
+}
 
 async function bindAiControls() {
   await refreshAiStatus();
