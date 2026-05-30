@@ -22,6 +22,7 @@ const aiQuestion = document.getElementById("aiQuestion");
 const aiLog = document.getElementById("aiLog");
 const playerSelect = document.getElementById("playerSelect");
 const selectedTokenBadge = document.getElementById("selectedTokenBadge");
+const playerNameInput = document.getElementById("playerNameInput");
 const healthInput = document.getElementById("healthInput");
 const manaInput = document.getElementById("manaInput");
 const diceTotalBadge = document.getElementById("diceTotalBadge");
@@ -46,6 +47,8 @@ const state = {
 
   lastPieceBroadcast: 0,
   selectedTokenId: "",
+  lastTarget: { x: 50, y: 50 },
+  armedEffect: "",
 };
 
 if (isProjector) {
@@ -127,6 +130,7 @@ function tokenDefaults(overrides = {}) {
     id: overrides.id || `token-${state.nextTokenId++}`,
     x: overrides.x ?? 50,
     y: overrides.y ?? 50,
+    name: overrides.name || "",
     health: overrides.health ?? 100,
     mana: overrides.mana ?? 70,
     buffs: overrides.buffs || [],
@@ -160,6 +164,7 @@ function renderToken(tokenData) {
       <div class="health-ring"></div>
       <div class="mana-ring"></div>
       <div class="piece-core"></div>
+      <div class="token-name"></div>
       <div class="badge-row buffs"></div>
       <div class="badge-row debuffs"></div>
     `;
@@ -174,6 +179,9 @@ function renderToken(tokenData) {
   token.style.setProperty("--hp", `${Math.max(0, Math.min(100, tokenData.health))}%`);
   token.style.setProperty("--mp", `${Math.max(0, Math.min(100, tokenData.mana))}%`);
   token.style.setProperty("--piece-color", tokenColor(tokenData.color));
+
+  const name = token.querySelector(".token-name");
+  name.textContent = tokenData.name || tokenLabel(tokenData, state.tokens.indexOf(tokenData));
 
   const buffs = token.querySelector(".badge-row.buffs");
   const debuffs = token.querySelector(".badge-row.debuffs");
@@ -203,6 +211,7 @@ function addToken(x, y, overrides = {}) {
 }
 
 function tokenLabel(token, index) {
+  if (token.name) return token.name;
   const source = token.detected ? token.color : "player";
   return `${source.charAt(0).toUpperCase()}${source.slice(1)} ${index + 1}`;
 }
@@ -243,10 +252,14 @@ function selectToken(id) {
 function syncStatusInputs() {
   const token = selectedToken();
   if (selectedTokenBadge) {
-    selectedTokenBadge.textContent = token ? token.id.replace("camera-", "") : "No player";
+    selectedTokenBadge.textContent = token ? tokenLabel(token, state.tokens.indexOf(token)) : "No player";
     selectedTokenBadge.classList.toggle("ready", Boolean(token));
   }
   if (!healthInput || !manaInput) return;
+  if (playerNameInput) {
+    playerNameInput.disabled = !token;
+    playerNameInput.value = token ? token.name || tokenLabel(token, state.tokens.indexOf(token)) : "";
+  }
   healthInput.disabled = !token;
   manaInput.disabled = !token;
   if (!token) {
@@ -267,6 +280,7 @@ function updateTokenStatus(id, changes, shouldBroadcast = true) {
   if (!token) return;
   if (changes.health !== undefined) token.health = clampStat(Number(changes.health));
   if (changes.mana !== undefined) token.mana = clampStat(Number(changes.mana));
+  if (changes.name !== undefined) token.name = String(changes.name).trim();
   if (changes.buffs) token.buffs = changes.buffs;
   if (changes.debuffs) token.debuffs = changes.debuffs;
   token.lastSeen = Date.now();
@@ -277,6 +291,7 @@ function updateTokenStatus(id, changes, shouldBroadcast = true) {
       id: token.id,
       health: token.health,
       mana: token.mana,
+      name: token.name,
       buffs: token.buffs,
       debuffs: token.debuffs,
     });
@@ -384,6 +399,12 @@ setInterval(refreshDetectedPieces, 1000);
 function setActiveToolButton(tool) {
   for (const button of document.querySelectorAll("button[data-tool]")) {
     button.classList.toggle("active", button.dataset.tool === tool);
+  }
+}
+
+function setActiveSpellButton(effect) {
+  for (const button of document.querySelectorAll(".spell-grid button[data-effect]")) {
+    button.classList.toggle("active", button.dataset.effect === effect);
   }
 }
 
@@ -1022,6 +1043,12 @@ function performRoll(sides, mode = "normal") {
 
 stage.addEventListener("click", (event) => {
   const point = stagePoint(event);
+  state.lastTarget = point;
+  if (state.armedEffect) {
+    triggerEffect(state.armedEffect, point.x, point.y);
+    broadcast("effect", { effect: state.armedEffect, x: point.x, y: point.y });
+    return;
+  }
   if (state.tool === "token") {
     addToken(point.x, point.y);
     broadcast("token", point);
@@ -1105,15 +1132,19 @@ function bindControls() {
   for (const button of document.querySelectorAll("button[data-tool]")) {
     button.addEventListener("click", () => {
       state.tool = button.dataset.tool;
+      state.armedEffect = "";
       setActiveToolButton(state.tool);
+      setActiveSpellButton("");
     });
   }
   setActiveToolButton(state.tool);
 
   for (const button of document.querySelectorAll(".spell-grid button[data-effect]")) {
     button.addEventListener("click", () => {
-      triggerEffect(button.dataset.effect, 50, 50);
-      broadcast("effect", { effect: button.dataset.effect, x: 50, y: 50 });
+      state.armedEffect = button.dataset.effect;
+      state.tool = "spell";
+      setActiveToolButton("");
+      setActiveSpellButton(state.armedEffect);
     });
   }
 
@@ -1140,6 +1171,23 @@ bindControls();
 function bindPlayerStatusControls() {
   if (!playerSelect || !healthInput || !manaInput) return;
   playerSelect.addEventListener("change", () => selectToken(playerSelect.value));
+  if (playerNameInput) {
+    playerNameInput.addEventListener("change", () => {
+      const token = selectedToken();
+      if (token) {
+        updateTokenStatus(token.id, { name: playerNameInput.value });
+        refreshPlayerSelect();
+      }
+    });
+    playerNameInput.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      const token = selectedToken();
+      if (token) {
+        updateTokenStatus(token.id, { name: playerNameInput.value });
+        refreshPlayerSelect();
+      }
+    });
+  }
   healthInput.addEventListener("change", () => {
     const token = selectedToken();
     if (token) updateTokenStatus(token.id, { health: healthInput.value });

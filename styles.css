@@ -194,6 +194,27 @@ button.active {
   opacity: 0.9;
 }
 
+.token-name {
+  position: absolute;
+  left: 50%;
+  bottom: -28px;
+  max-width: 118px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 244, 216, 0.34);
+  border-radius: 999px;
+  background: rgba(8, 10, 11, 0.76);
+  color: #fff4d8;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.1;
+  padding: 4px 8px;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .health-ring,
 .mana-ring,
 .piece-core {
@@ -449,9 +470,24 @@ h2 {
   margin-top: 12px;
 }
 
-.stat-control label {
+.stat-control label,
+.name-control {
   color: var(--muted);
   font-size: 13px;
+}
+
+.name-control {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.name-control input {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #111518;
+  color: var(--text);
+  padding: 8px 10px;
 }
 
 .stepper-row {
