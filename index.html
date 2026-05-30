@@ -16,6 +16,45 @@
         <canvas id="effectCanvas" class="effect-canvas"></canvas>
         <div id="fogLayer" class="fog-layer"></div>
         <div id="tokenLayer" class="token-layer"></div>
+        <div id="tokenContextMenu" class="token-context-menu hidden">
+          <div class="token-menu-title">Token</div>
+          <div class="mini-stepper">
+            <span>HP</span>
+            <button data-token-stat="health" data-delta="-10">-10</button>
+            <button data-token-stat="health" data-delta="-1">-1</button>
+            <button data-token-stat="health" data-delta="1">+1</button>
+            <button data-token-stat="health" data-delta="10">+10</button>
+          </div>
+          <div class="mini-stepper">
+            <span>Mana</span>
+            <button data-token-stat="mana" data-delta="-10">-10</button>
+            <button data-token-stat="mana" data-delta="-1">-1</button>
+            <button data-token-stat="mana" data-delta="1">+1</button>
+            <button data-token-stat="mana" data-delta="10">+10</button>
+          </div>
+          <div class="mini-stepper">
+            <span>Size</span>
+            <button data-token-stat="size" data-delta="-12">-</button>
+            <button data-token-size="82">M</button>
+            <button data-token-size="118">L</button>
+            <button data-token-stat="size" data-delta="12">+</button>
+          </div>
+          <div class="status-picker">
+            <span>Buffs</span>
+            <button data-token-buff="Bless">Bless</button>
+            <button data-token-buff="Shield">Shield</button>
+            <button data-token-buff="Haste">Haste</button>
+            <button data-token-buff="Invisible">Invisible</button>
+          </div>
+          <div class="status-picker">
+            <span>Debuffs</span>
+            <button data-token-debuff="Poisoned">Poisoned</button>
+            <button data-token-debuff="Stunned">Stunned</button>
+            <button data-token-debuff="Restrained">Restrained</button>
+            <button data-token-debuff="Blinded">Blinded</button>
+          </div>
+          <button id="clearTokenStatusButton" class="wide">Clear status</button>
+        </div>
         <div id="menuRing" class="menu-ring hidden">
           <button data-effect="fire">Fire</button>
           <button data-effect="ice">Ice</button>

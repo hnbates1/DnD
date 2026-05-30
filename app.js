@@ -9,6 +9,7 @@ const effectCanvas = document.getElementById("effectCanvas");
 const effectCtx = effectCanvas.getContext("2d");
 const fogLayer = document.getElementById("fogLayer");
 const tokenLayer = document.getElementById("tokenLayer");
+const tokenContextMenu = document.getElementById("tokenContextMenu");
 const menuRing = document.getElementById("menuRing");
 const projectorHint = document.getElementById("projectorHint");
 const cameraVideo = document.getElementById("cameraVideo");
@@ -131,6 +132,7 @@ function tokenDefaults(overrides = {}) {
     x: overrides.x ?? 50,
     y: overrides.y ?? 50,
     name: overrides.name || "",
+    size: overrides.size ?? 82,
     health: overrides.health ?? 100,
     mana: overrides.mana ?? 70,
     buffs: overrides.buffs || [],
@@ -148,8 +150,16 @@ function statusBadge(label, type) {
   badge.textContent = {
     Bless: "B",
     Shield: "S",
+    Haste: "H",
+    Invisible: "I",
+    Rage: "R",
     Wound: "W",
     Hex: "H",
+    Poisoned: "P",
+    Stunned: "S",
+    Restrained: "R",
+    Blinded: "B",
+    Frightened: "F",
   }[label] || label.slice(0, 1).toUpperCase();
   return badge;
 }
@@ -168,9 +178,16 @@ function renderToken(tokenData) {
       <div class="badge-row buffs"></div>
       <div class="badge-row debuffs"></div>
     `;
+    token.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (isProjector) return;
+      selectToken(tokenData.id);
+      showTokenContextMenu(tokenData);
+    });
     tokenLayer.appendChild(token);
   }
 
+  token.dataset.tokenId = tokenData.id;
   token.classList.toggle("detected", tokenData.detected);
   token.classList.toggle("stale", Date.now() - tokenData.lastSeen > 2500);
   token.classList.toggle("selected", tokenData.id === state.selectedTokenId);
@@ -179,6 +196,7 @@ function renderToken(tokenData) {
   token.style.setProperty("--hp", `${Math.max(0, Math.min(100, tokenData.health))}%`);
   token.style.setProperty("--mp", `${Math.max(0, Math.min(100, tokenData.mana))}%`);
   token.style.setProperty("--piece-color", tokenColor(tokenData.color));
+  token.style.setProperty("--token-size", `${clampTokenSize(tokenData.size)}px`);
 
   const name = token.querySelector(".token-name");
   name.textContent = tokenData.name || tokenLabel(tokenData, state.tokens.indexOf(tokenData));
@@ -275,11 +293,17 @@ function clampStat(value) {
   return Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0));
 }
 
+function clampTokenSize(value) {
+  const numeric = Number(value);
+  return Math.max(42, Math.min(220, Number.isFinite(numeric) ? numeric : 82));
+}
+
 function updateTokenStatus(id, changes, shouldBroadcast = true) {
   const token = state.tokens.find((item) => item.id === id);
   if (!token) return;
   if (changes.health !== undefined) token.health = clampStat(Number(changes.health));
   if (changes.mana !== undefined) token.mana = clampStat(Number(changes.mana));
+  if (changes.size !== undefined) token.size = clampTokenSize(changes.size);
   if (changes.name !== undefined) token.name = String(changes.name).trim();
   if (changes.buffs) token.buffs = changes.buffs;
   if (changes.debuffs) token.debuffs = changes.debuffs;
@@ -292,6 +316,7 @@ function updateTokenStatus(id, changes, shouldBroadcast = true) {
       health: token.health,
       mana: token.mana,
       name: token.name,
+      size: token.size,
       buffs: token.buffs,
       debuffs: token.debuffs,
     });
@@ -301,7 +326,40 @@ function updateTokenStatus(id, changes, shouldBroadcast = true) {
 function adjustSelectedStat(stat, delta) {
   const token = selectedToken();
   if (!token) return;
+  if (stat === "size") {
+    updateTokenStatus(token.id, { size: clampTokenSize(Number(token.size) + delta) });
+    return;
+  }
   updateTokenStatus(token.id, { [stat]: clampStat(Number(token[stat]) + delta) });
+}
+
+function toggleTokenStatus(type, label) {
+  const token = selectedToken();
+  if (!token) return;
+  const key = type === "buff" ? "buffs" : "debuffs";
+  const values = token[key].includes(label)
+    ? token[key].filter((item) => item !== label)
+    : [...token[key], label];
+  updateTokenStatus(token.id, { [key]: values });
+  showTokenContextMenu(token);
+}
+
+function showTokenContextMenu(token) {
+  if (!tokenContextMenu || isProjector) return;
+  tokenContextMenu.classList.remove("hidden");
+  tokenContextMenu.style.left = `${token.x}%`;
+  tokenContextMenu.style.top = `${token.y}%`;
+  tokenContextMenu.querySelector(".token-menu-title").textContent = tokenLabel(token, state.tokens.indexOf(token));
+  for (const button of tokenContextMenu.querySelectorAll("[data-token-buff]")) {
+    button.classList.toggle("active", token.buffs.includes(button.dataset.tokenBuff));
+  }
+  for (const button of tokenContextMenu.querySelectorAll("[data-token-debuff]")) {
+    button.classList.toggle("active", token.debuffs.includes(button.dataset.tokenDebuff));
+  }
+}
+
+function hideTokenContextMenu() {
+  tokenContextMenu?.classList.add("hidden");
 }
 
 function upsertDetectedPiece(piece) {
@@ -761,6 +819,7 @@ function clearOverlays() {
   state.particles = [];
   setFog(false);
   hideMenu();
+  hideTokenContextMenu();
   refreshPlayerSelect();
 }
 
@@ -1044,6 +1103,7 @@ function performRoll(sides, mode = "normal") {
 stage.addEventListener("click", (event) => {
   const point = stagePoint(event);
   state.lastTarget = point;
+  hideTokenContextMenu();
   if (state.armedEffect) {
     triggerEffect(state.armedEffect, point.x, point.y);
     broadcast("effect", { effect: state.armedEffect, x: point.x, y: point.y });
@@ -1155,6 +1215,7 @@ function bindControls() {
 
   bindPlayerStatusControls();
   bindDiceControls();
+  bindTokenContextMenu();
 
   document.getElementById("cameraButton").addEventListener("click", startCamera);
   document.getElementById("calibrateButton").addEventListener("click", () => {
@@ -1222,6 +1283,49 @@ function bindPlayerStatusControls() {
     if (token) updateTokenStatus(token.id, { mana: 100 });
   });
   refreshPlayerSelect();
+}
+
+function bindTokenContextMenu() {
+  if (!tokenContextMenu) return;
+  tokenContextMenu.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const statButton = event.target.closest("button[data-token-stat][data-delta]");
+    if (statButton) {
+      adjustSelectedStat(statButton.dataset.tokenStat, Number(statButton.dataset.delta));
+      const token = selectedToken();
+      if (token) showTokenContextMenu(token);
+      return;
+    }
+
+    const sizeButton = event.target.closest("button[data-token-size]");
+    if (sizeButton) {
+      const token = selectedToken();
+      if (token) {
+        updateTokenStatus(token.id, { size: sizeButton.dataset.tokenSize });
+        showTokenContextMenu(token);
+      }
+      return;
+    }
+
+    const buffButton = event.target.closest("button[data-token-buff]");
+    if (buffButton) {
+      toggleTokenStatus("buff", buffButton.dataset.tokenBuff);
+      return;
+    }
+
+    const debuffButton = event.target.closest("button[data-token-debuff]");
+    if (debuffButton) {
+      toggleTokenStatus("debuff", debuffButton.dataset.tokenDebuff);
+      return;
+    }
+  });
+
+  document.getElementById("clearTokenStatusButton").addEventListener("click", () => {
+    const token = selectedToken();
+    if (!token) return;
+    updateTokenStatus(token.id, { buffs: [], debuffs: [] });
+    showTokenContextMenu(token);
+  });
 }
 
 function bindDiceControls() {
