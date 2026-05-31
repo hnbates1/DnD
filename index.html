@@ -100,115 +100,20 @@
 
         <div class="panel dice-panel">
           <h2>Dice Roller</h2>
-          <div class="dice-grid">
-
-            <button class="die-btn" data-sides="4" title="Roll d4">
-              <svg viewBox="0 0 60 62" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs>
-                  <radialGradient id="g4" cx="40%" cy="30%" r="65%">
-                    <stop offset="0%" stop-color="#6fe89a"/>
-                    <stop offset="55%" stop-color="#1e7a42"/>
-                    <stop offset="100%" stop-color="#072614"/>
-                  </radialGradient>
-                </defs>
-                <polygon points="30,3 58,57 2,57" fill="url(#g4)" stroke="#2e9e58" stroke-width="1.5" stroke-linejoin="round"/>
-                <polygon points="30,14 48,50 12,50" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-                <line x1="30" y1="14" x2="30" y2="57" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
-                <text x="30" y="47" text-anchor="middle" class="die-label">d4</text>
-              </svg>
-              <span class="die-roll-val"></span>
-            </button>
-
-            <button class="die-btn" data-sides="6" title="Roll d6">
-              <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs>
-                  <radialGradient id="g6" cx="38%" cy="32%" r="62%">
-                    <stop offset="0%" stop-color="#6cb8f0"/>
-                    <stop offset="52%" stop-color="#1f5496"/>
-                    <stop offset="100%" stop-color="#071a38"/>
-                  </radialGradient>
-                </defs>
-                <rect x="4" y="4" width="52" height="52" rx="6" ry="6" fill="url(#g6)" stroke="#2a72c8" stroke-width="1.5"/>
-                <rect x="11" y="11" width="38" height="38" rx="3" ry="3" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-                <text x="30" y="36" text-anchor="middle" class="die-label">d6</text>
-              </svg>
-              <span class="die-roll-val"></span>
-            </button>
-
-            <button class="die-btn" data-sides="8" title="Roll d8">
-              <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs>
-                  <radialGradient id="g8" cx="38%" cy="30%" r="64%">
-                    <stop offset="0%" stop-color="#f07a7a"/>
-                    <stop offset="52%" stop-color="#942020"/>
-                    <stop offset="100%" stop-color="#260808"/>
-                  </radialGradient>
-                </defs>
-                <polygon points="30,3 57,30 30,57 3,30" fill="url(#g8)" stroke="#c43030" stroke-width="1.5" stroke-linejoin="round"/>
-                <polygon points="30,12 48,30 30,48 12,30" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-                <line x1="3" y1="30" x2="57" y2="30" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
-                <text x="30" y="35" text-anchor="middle" class="die-label">d8</text>
-              </svg>
-              <span class="die-roll-val"></span>
-            </button>
-
-            <button class="die-btn" data-sides="10" title="Roll d10">
-              <svg viewBox="0 0 60 62" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs>
-                  <radialGradient id="g10" cx="40%" cy="30%" r="65%">
-                    <stop offset="0%" stop-color="#f0c45a"/>
-                    <stop offset="52%" stop-color="#9a6610"/>
-                    <stop offset="100%" stop-color="#2c1a02"/>
-                  </radialGradient>
-                </defs>
-                <polygon points="30,3 56,26 46,57 14,57 4,26" fill="url(#g10)" stroke="#c88820" stroke-width="1.5" stroke-linejoin="round"/>
-                <polygon points="30,13 47,30 39,50 21,50 13,30" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-                <line x1="30" y1="3" x2="30" y2="57" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
-                <text x="30" y="41" text-anchor="middle" class="die-label">d10</text>
-              </svg>
-              <span class="die-roll-val"></span>
-            </button>
-
-            <button class="die-btn" data-sides="12" title="Roll d12">
-              <svg viewBox="0 0 60 62" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs>
-                  <radialGradient id="g12" cx="38%" cy="30%" r="64%">
-                    <stop offset="0%" stop-color="#b07aee"/>
-                    <stop offset="52%" stop-color="#5a1e9a"/>
-                    <stop offset="100%" stop-color="#160630"/>
-                  </radialGradient>
-                </defs>
-                <polygon points="30,3 54,18 54,44 30,59 6,44 6,18" fill="url(#g12)" stroke="#7a30d4" stroke-width="1.5" stroke-linejoin="round"/>
-                <polygon points="30,13 46,24 46,40 30,50 14,40 14,24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-                <text x="30" y="36" text-anchor="middle" class="die-label">d12</text>
-              </svg>
-              <span class="die-roll-val"></span>
-            </button>
-
-            <button class="die-btn die-btn--d20" data-sides="20" title="Roll d20">
-              <svg viewBox="0 0 60 62" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs>
-                  <radialGradient id="g20" cx="42%" cy="28%" r="68%">
-                    <stop offset="0%" stop-color="#6a9fff"/>
-                    <stop offset="48%" stop-color="#1030a0"/>
-                    <stop offset="100%" stop-color="#030a28"/>
-                  </radialGradient>
-                </defs>
-                <polygon points="30,59 2,4 58,4" fill="url(#g20)" stroke="#3060e0" stroke-width="2" stroke-linejoin="round"/>
-                <polygon points="30,48 11,12 49,12" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.2"/>
-                <line x1="30" y1="4" x2="30" y2="59" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
-                <line x1="2" y1="4" x2="58" y2="59" stroke="rgba(255,255,255,0.06)" stroke-width="0.8"/>
-                <line x1="58" y1="4" x2="2" y2="59" stroke="rgba(255,255,255,0.06)" stroke-width="0.8"/>
-                <text x="30" y="34" text-anchor="middle" class="die-label die-label--lg">d20</text>
-              </svg>
-              <span class="die-roll-val"></span>
-            </button>
-
+          <div class="dice-pick-row">
+            <button class="die-pick" data-dice="1d4">d4</button>
+            <button class="die-pick" data-dice="1d6">d6</button>
+            <button class="die-pick" data-dice="1d8">d8</button>
+            <button class="die-pick" data-dice="1d10">d10</button>
+            <button class="die-pick" data-dice="1d12">d12</button>
+            <button class="die-pick active" data-dice="1d20">d20</button>
           </div>
-          <div id="diceResult" class="dice-result" aria-live="polite">
-            <span class="dice-result-inner">Click a die to roll</span>
+          <div id="diceStage" class="dice-stage" title="Swipe to roll"></div>
+          <button id="rollDiceBtn" class="wide dice-roll-btn">Roll</button>
+          <div id="diceResult3d" class="dice-result" aria-live="polite">
+            <span id="diceResultInner" class="dice-result-inner">Pick a die — swipe stage or press Roll</span>
           </div>
-          <div id="diceHistory" class="dice-history"></div>
+          <div id="diceHistory3d" class="dice-history"></div>
         </div>
 
         <div class="panel">
@@ -227,5 +132,266 @@
     </main>
 
     <script src="app.js"></script>
+    <script src="libs/three.min.js"></script>
+    <script src="libs/cannon.min.js"></script>
+    <script src="libs/teal.js"></script>
+    <script src="libs/dice.js"></script>
+    <script>
+(function initDiceRoller() {
+  var box = null;
+  var currentDice = '1d20';
+  var rollHistory = [];
+  var MAX_HIST = 12;
+
+  var stage = document.getElementById('diceStage');
+  var resultInner = document.getElementById('diceResultInner');
+  var historyEl = document.getElementById('diceHistory3d');
+  var rollBtn = document.getElementById('rollDiceBtn');
+
+  function hasWebGL() {
+    try {
+      var c = document.createElement('canvas');
+      return !!(c.getContext('webgl') || c.getContext('experimental-webgl'));
+    } catch(e) { return false; }
+  }
+
+  requestAnimationFrame(function() {
+    if (hasWebGL()) {
+      try {
+        box = new DICE.dice_box(stage);
+        box.setDice(currentDice);
+        box.bind_swipe(stage, onBeforeRoll, onAfterRoll);
+        return;
+      } catch(e) { /* fall through to 2D */ }
+    }
+    init2D();
+  });
+
+  for (var btn of document.querySelectorAll('.die-pick[data-dice]')) {
+    (function(b) {
+      b.addEventListener('click', function() {
+        document.querySelectorAll('.die-pick').forEach(function(p) { p.classList.remove('active'); });
+        b.classList.add('active');
+        currentDice = b.dataset.dice;
+        if (box) { box.setDice(currentDice); }
+        else { draw2D(currentDice, null); }
+      });
+    })(btn);
+  }
+
+  rollBtn.addEventListener('click', function() {
+    if (box) {
+      box.setDice(currentDice);
+      box.start_throw(onBeforeRoll, onAfterRoll);
+    } else {
+      roll2D();
+    }
+  });
+
+  function onBeforeRoll(notation) {
+    resultInner.textContent = 'Rolling\u2026';
+    resultInner.className = 'dice-result-inner';
+    return null;
+  }
+
+  function onAfterRoll(notation) {
+    if (!notation || !notation.result || notation.result[0] < 0) {
+      resultInner.textContent = 'Dice fell off the table \u2014 roll again!';
+      resultInner.className = 'dice-result-inner';
+      return;
+    }
+    showResult(notation.result[0], parseInt(currentDice.replace(/^\d+d/,''),10), notation.resultString);
+  }
+
+  function showResult(topResult, sides, str) {
+    var isCrit = sides === 20 && topResult === 20;
+    var isFail = sides === 20 && topResult === 1;
+    var display = currentDice + ' \u2192 ' + str;
+    if (isCrit) display = '\u2728 Critical! ' + display;
+    if (isFail) display = '\uD83D\uDC80 Nat 1! ' + display;
+    resultInner.textContent = display;
+    resultInner.className = 'dice-result-inner has-roll' + (isCrit?' crit':isFail?' fail':'');
+    rollHistory.unshift({ label: currentDice, val: str, isCrit: isCrit, isFail: isFail });
+    if (rollHistory.length > MAX_HIST) rollHistory.pop();
+    historyEl.innerHTML = '';
+    for (var h of rollHistory) {
+      var chip = document.createElement('span');
+      chip.className = 'dice-history-chip';
+      chip.textContent = h.label + ':' + h.val;
+      if (h.isCrit) chip.style.color = '#f0d060';
+      if (h.isFail) chip.style.color = '#f07070';
+      historyEl.appendChild(chip);
+    }
+  }
+
+  /* ---- 2D Canvas fallback ---- */
+  var canvas2d = null, ctx2d = null, rolling2d = false;
+
+  var DICE_DEFS = {
+    d4:  { sides:4,  color:'#1a6e3a', hi:'#5ee88a', stroke:'#2ea850', shape:'tri',     numY:0.58 },
+    d6:  { sides:6,  color:'#1a3a7c', hi:'#5aaaf0', stroke:'#2a6acc', shape:'sq',      numY:0.55 },
+    d8:  { sides:8,  color:'#7c1a1a', hi:'#f06060', stroke:'#c43030', shape:'diamond', numY:0.55 },
+    d10: { sides:10, color:'#7a5010', hi:'#f0c050', stroke:'#c88020', shape:'kite',    numY:0.60 },
+    d12: { sides:12, color:'#3a1870', hi:'#b070f0', stroke:'#7030d0', shape:'hex',     numY:0.55 },
+    d20: { sides:20, color:'#0a1a52', hi:'#5a8fff', stroke:'#2050d8', shape:'tri-inv', numY:0.48 },
+  };
+
+  var SHAPES = {
+    'tri':     [[0.5,0.04],[0.97,0.93],[0.03,0.93]],
+    'tri-inv': [[0.5,0.96],[0.03,0.07],[0.97,0.07]],
+    'sq':      [[0.07,0.07],[0.93,0.07],[0.93,0.93],[0.07,0.93]],
+    'diamond': [[0.5,0.03],[0.97,0.5],[0.5,0.97],[0.03,0.5]],
+    'kite':    [[0.5,0.04],[0.94,0.36],[0.77,0.94],[0.23,0.94],[0.06,0.36]],
+    'hex':     [[0.5,0.04],[0.92,0.27],[0.92,0.73],[0.5,0.96],[0.08,0.73],[0.08,0.27]],
+  };
+
+  function init2D() {
+    stage.innerHTML = '';
+    canvas2d = document.createElement('canvas');
+    canvas2d.style.width = '100%';
+    canvas2d.style.height = '100%';
+    canvas2d.style.display = 'block';
+    stage.appendChild(canvas2d);
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    draw2D(currentDice, null);
+
+    var hint = document.createElement('div');
+    hint.className = 'dice-webgl-hint';
+    hint.textContent = 'Open in browser for full 3D physics dice';
+    stage.appendChild(hint);
+  }
+
+  function resizeCanvas() {
+    if (!canvas2d) return;
+    canvas2d.width = stage.clientWidth;
+    canvas2d.height = stage.clientHeight;
+    ctx2d = canvas2d.getContext('2d');
+    draw2D(currentDice, canvas2d._lastResult || null);
+  }
+
+  function parseDice(notation) {
+    var m = notation.match(/^(\d+)d(\d+)$/);
+    return m ? { count: parseInt(m[1]), sides: parseInt(m[2]) } : { count:1, sides:20 };
+  }
+
+  function draw2D(notation, result) {
+    if (!ctx2d) return;
+    var w = canvas2d.width, h = canvas2d.height;
+    var d = parseDice(notation);
+    var key = 'd' + d.sides;
+    var def = DICE_DEFS[key] || DICE_DEFS['d20'];
+    var pts = SHAPES[def.shape];
+
+    ctx2d.clearRect(0, 0, w, h);
+
+    var pad = Math.min(w, h) * 0.08;
+    var sz = Math.min(w, h) - pad * 2;
+    var ox = (w - sz) / 2, oy = (h - sz) / 2;
+
+    /* shadow */
+    ctx2d.save();
+    ctx2d.shadowColor = 'rgba(0,0,0,0.7)';
+    ctx2d.shadowBlur = sz * 0.12;
+    ctx2d.shadowOffsetY = sz * 0.05;
+
+    /* body gradient */
+    var grd = ctx2d.createRadialGradient(
+      ox + sz*0.38, oy + sz*0.28, 0,
+      ox + sz*0.5, oy + sz*0.5, sz*0.7
+    );
+    grd.addColorStop(0, def.hi);
+    grd.addColorStop(0.42, def.color);
+    grd.addColorStop(1, 'rgba(0,0,0,0.88)');
+
+    ctx2d.beginPath();
+    ctx2d.moveTo(ox + pts[0][0]*sz, oy + pts[0][1]*sz);
+    for (var i=1; i<pts.length; i++) ctx2d.lineTo(ox + pts[i][0]*sz, oy + pts[i][1]*sz);
+    ctx2d.closePath();
+    ctx2d.fillStyle = grd;
+    ctx2d.fill();
+    ctx2d.restore();
+
+    /* edge stroke */
+    ctx2d.beginPath();
+    ctx2d.moveTo(ox + pts[0][0]*sz, oy + pts[0][1]*sz);
+    for (var i=1; i<pts.length; i++) ctx2d.lineTo(ox + pts[i][0]*sz, oy + pts[i][1]*sz);
+    ctx2d.closePath();
+    ctx2d.strokeStyle = def.stroke;
+    ctx2d.lineWidth = sz * 0.025;
+    ctx2d.stroke();
+
+    /* inner facet highlight */
+    var ipts = pts.map(function(p){ return [0.5+( p[0]-0.5)*0.62, 0.5+(p[1]-0.5)*0.62]; });
+    ctx2d.beginPath();
+    ctx2d.moveTo(ox + ipts[0][0]*sz, oy + ipts[0][1]*sz);
+    for (var i=1; i<ipts.length; i++) ctx2d.lineTo(ox + ipts[i][0]*sz, oy + ipts[i][1]*sz);
+    ctx2d.closePath();
+    ctx2d.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx2d.lineWidth = sz * 0.012;
+    ctx2d.stroke();
+
+    /* specular shine dot */
+    var shine = ctx2d.createRadialGradient(
+      ox+sz*0.33, oy+sz*0.26, 0,
+      ox+sz*0.33, oy+sz*0.26, sz*0.22
+    );
+    shine.addColorStop(0, 'rgba(255,255,255,0.32)');
+    shine.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx2d.fillStyle = shine;
+    ctx2d.beginPath();
+    ctx2d.moveTo(ox + pts[0][0]*sz, oy + pts[0][1]*sz);
+    for (var i=1; i<pts.length; i++) ctx2d.lineTo(ox + pts[i][0]*sz, oy + pts[i][1]*sz);
+    ctx2d.closePath();
+    ctx2d.fill();
+
+    /* number / label */
+    var cx = ox + sz*0.5, cy = oy + sz*def.numY;
+    if (result !== null && result !== undefined) {
+      ctx2d.font = 'bold ' + Math.round(sz*0.36) + 'px Arial';
+      ctx2d.fillStyle = '#fff8df';
+      ctx2d.textAlign = 'center';
+      ctx2d.textBaseline = 'middle';
+      ctx2d.shadowColor = 'rgba(0,0,0,0.9)';
+      ctx2d.shadowBlur = sz*0.06;
+      ctx2d.fillText(String(result), cx, cy);
+      ctx2d.shadowBlur = 0;
+    } else {
+      ctx2d.font = 'bold ' + Math.round(sz*0.18) + 'px Arial';
+      ctx2d.fillStyle = 'rgba(255,248,220,0.72)';
+      ctx2d.textAlign = 'center';
+      ctx2d.textBaseline = 'middle';
+      ctx2d.fillText(key, cx, cy);
+    }
+    if (canvas2d) canvas2d._lastResult = result;
+  }
+
+  function roll2D() {
+    if (rolling2d) return;
+    rolling2d = true;
+    resultInner.textContent = 'Rolling\u2026';
+    resultInner.className = 'dice-result-inner';
+
+    var d = parseDice(currentDice);
+    var frames = 0, maxFrames = 22;
+    var key = 'd' + d.sides;
+
+    function animate() {
+      var fake = Math.floor(Math.random() * d.sides) + 1;
+      draw2D(currentDice, fake);
+      frames++;
+      if (frames < maxFrames) {
+        setTimeout(animate, 30 + frames * 5);
+      } else {
+        var result = Math.floor(Math.random() * d.sides) + 1;
+        draw2D(currentDice, result);
+        rolling2d = false;
+        showResult(result, d.sides, String(result));
+      }
+    }
+    animate();
+  }
+})();
+    </script>
   </body>
 </html>
