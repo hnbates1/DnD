@@ -172,9 +172,9 @@ class DnDHandler(SimpleHTTPRequestHandler):
 def main():
     load_local_env()
     root = Path(__file__).resolve().parent
-    port = 8765
-    server = ThreadingHTTPServer(("127.0.0.1", port), DnDHandler)
-    print(f"DnD crawl system running at http://127.0.0.1:{port}")
+    port = int(os.environ.get("PORT", 5000))
+    server = ThreadingHTTPServer(("0.0.0.0", port), DnDHandler)
+    print(f"DnD crawl system running at http://0.0.0.0:{port}")
     print(f"Serving files from {root}")
     server.serve_forever()
 
