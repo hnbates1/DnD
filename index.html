@@ -98,6 +98,119 @@
           <button id="askAiButton" class="wide ask-button">Ask AI</button>
         </div>
 
+        <div class="panel dice-panel">
+          <h2>Dice Roller</h2>
+          <div class="dice-grid">
+
+            <button class="die-btn" data-sides="4" title="Roll d4">
+              <svg viewBox="0 0 60 62" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <radialGradient id="g4" cx="40%" cy="30%" r="65%">
+                    <stop offset="0%" stop-color="#6fe89a"/>
+                    <stop offset="55%" stop-color="#1e7a42"/>
+                    <stop offset="100%" stop-color="#072614"/>
+                  </radialGradient>
+                </defs>
+                <polygon points="30,3 58,57 2,57" fill="url(#g4)" stroke="#2e9e58" stroke-width="1.5" stroke-linejoin="round"/>
+                <polygon points="30,14 48,50 12,50" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+                <line x1="30" y1="14" x2="30" y2="57" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+                <text x="30" y="47" text-anchor="middle" class="die-label">d4</text>
+              </svg>
+              <span class="die-roll-val"></span>
+            </button>
+
+            <button class="die-btn" data-sides="6" title="Roll d6">
+              <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <radialGradient id="g6" cx="38%" cy="32%" r="62%">
+                    <stop offset="0%" stop-color="#6cb8f0"/>
+                    <stop offset="52%" stop-color="#1f5496"/>
+                    <stop offset="100%" stop-color="#071a38"/>
+                  </radialGradient>
+                </defs>
+                <rect x="4" y="4" width="52" height="52" rx="6" ry="6" fill="url(#g6)" stroke="#2a72c8" stroke-width="1.5"/>
+                <rect x="11" y="11" width="38" height="38" rx="3" ry="3" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+                <text x="30" y="36" text-anchor="middle" class="die-label">d6</text>
+              </svg>
+              <span class="die-roll-val"></span>
+            </button>
+
+            <button class="die-btn" data-sides="8" title="Roll d8">
+              <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <radialGradient id="g8" cx="38%" cy="30%" r="64%">
+                    <stop offset="0%" stop-color="#f07a7a"/>
+                    <stop offset="52%" stop-color="#942020"/>
+                    <stop offset="100%" stop-color="#260808"/>
+                  </radialGradient>
+                </defs>
+                <polygon points="30,3 57,30 30,57 3,30" fill="url(#g8)" stroke="#c43030" stroke-width="1.5" stroke-linejoin="round"/>
+                <polygon points="30,12 48,30 30,48 12,30" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+                <line x1="3" y1="30" x2="57" y2="30" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+                <text x="30" y="35" text-anchor="middle" class="die-label">d8</text>
+              </svg>
+              <span class="die-roll-val"></span>
+            </button>
+
+            <button class="die-btn" data-sides="10" title="Roll d10">
+              <svg viewBox="0 0 60 62" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <radialGradient id="g10" cx="40%" cy="30%" r="65%">
+                    <stop offset="0%" stop-color="#f0c45a"/>
+                    <stop offset="52%" stop-color="#9a6610"/>
+                    <stop offset="100%" stop-color="#2c1a02"/>
+                  </radialGradient>
+                </defs>
+                <polygon points="30,3 56,26 46,57 14,57 4,26" fill="url(#g10)" stroke="#c88820" stroke-width="1.5" stroke-linejoin="round"/>
+                <polygon points="30,13 47,30 39,50 21,50 13,30" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+                <line x1="30" y1="3" x2="30" y2="57" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+                <text x="30" y="41" text-anchor="middle" class="die-label">d10</text>
+              </svg>
+              <span class="die-roll-val"></span>
+            </button>
+
+            <button class="die-btn" data-sides="12" title="Roll d12">
+              <svg viewBox="0 0 60 62" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <radialGradient id="g12" cx="38%" cy="30%" r="64%">
+                    <stop offset="0%" stop-color="#b07aee"/>
+                    <stop offset="52%" stop-color="#5a1e9a"/>
+                    <stop offset="100%" stop-color="#160630"/>
+                  </radialGradient>
+                </defs>
+                <polygon points="30,3 54,18 54,44 30,59 6,44 6,18" fill="url(#g12)" stroke="#7a30d4" stroke-width="1.5" stroke-linejoin="round"/>
+                <polygon points="30,13 46,24 46,40 30,50 14,40 14,24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+                <text x="30" y="36" text-anchor="middle" class="die-label">d12</text>
+              </svg>
+              <span class="die-roll-val"></span>
+            </button>
+
+            <button class="die-btn die-btn--d20" data-sides="20" title="Roll d20">
+              <svg viewBox="0 0 60 62" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <radialGradient id="g20" cx="42%" cy="28%" r="68%">
+                    <stop offset="0%" stop-color="#6a9fff"/>
+                    <stop offset="48%" stop-color="#1030a0"/>
+                    <stop offset="100%" stop-color="#030a28"/>
+                  </radialGradient>
+                </defs>
+                <polygon points="30,59 2,4 58,4" fill="url(#g20)" stroke="#3060e0" stroke-width="2" stroke-linejoin="round"/>
+                <polygon points="30,48 11,12 49,12" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.2"/>
+                <line x1="30" y1="4" x2="30" y2="59" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+                <line x1="2" y1="4" x2="58" y2="59" stroke="rgba(255,255,255,0.06)" stroke-width="0.8"/>
+                <line x1="58" y1="4" x2="2" y2="59" stroke="rgba(255,255,255,0.06)" stroke-width="0.8"/>
+                <text x="30" y="34" text-anchor="middle" class="die-label die-label--lg">d20</text>
+              </svg>
+              <span class="die-roll-val"></span>
+            </button>
+
+          </div>
+          <div id="diceResult" class="dice-result" aria-live="polite">
+            <span class="dice-result-inner">Click a die to roll</span>
+          </div>
+          <div id="diceHistory" class="dice-history"></div>
+        </div>
+
         <div class="panel">
           <h2>Camera</h2>
           <div class="button-row">

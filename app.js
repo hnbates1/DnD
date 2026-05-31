@@ -806,3 +806,67 @@ function cameraToBoard(x, y) {
     y: Math.min(100, Math.max(0, y * 100)),
   };
 }
+
+(function bindDiceRoller() {
+  const resultDisplay = document.getElementById("diceResult");
+  const historyRow = document.getElementById("diceHistory");
+  if (!resultDisplay || !historyRow) return;
+
+  const resultInner = resultDisplay.querySelector(".dice-result-inner");
+  const MAX_HISTORY = 12;
+  const rollHistory = [];
+
+  function rollDie(sides) {
+    return Math.floor(Math.random() * sides) + 1;
+  }
+
+  function pushHistory(label, result, sides) {
+    rollHistory.unshift({ label, result, sides });
+    if (rollHistory.length > MAX_HISTORY) rollHistory.pop();
+    historyRow.innerHTML = "";
+    for (const entry of rollHistory) {
+      const chip = document.createElement("span");
+      chip.className = "dice-history-chip";
+      chip.textContent = `${entry.label}:${entry.result}`;
+      if (entry.result === entry.sides) chip.style.color = "#f0d060";
+      if (entry.result === 1) chip.style.color = "#f07070";
+      historyRow.appendChild(chip);
+    }
+  }
+
+  for (const btn of document.querySelectorAll(".die-btn[data-sides]")) {
+    const sides = parseInt(btn.dataset.sides, 10);
+    const valSpan = btn.querySelector(".die-roll-val");
+
+    btn.addEventListener("click", () => {
+      if (btn.classList.contains("rolling")) return;
+
+      btn.classList.remove("has-result");
+      btn.classList.add("rolling");
+      valSpan.textContent = "";
+
+      setTimeout(() => {
+        const result = rollDie(sides);
+        valSpan.textContent = result;
+        btn.classList.remove("rolling");
+        btn.classList.add("has-result");
+
+        const label = `d${sides}`;
+        const isCrit = sides === 20 && result === 20;
+        const isFail = sides === 20 && result === 1;
+
+        resultInner.textContent = isCrit
+          ? `\u2728 Critical! d${sides} \u2192 ${result}`
+          : isFail
+          ? `\uD83D\uDC80 Nat 1! d${sides} \u2192 ${result}`
+          : `${label} \u2192 ${result}`;
+
+        resultInner.className = "dice-result-inner has-roll";
+        if (isCrit) resultInner.classList.add("crit");
+        if (isFail) resultInner.classList.add("fail");
+
+        pushHistory(label, result, sides);
+      }, 350);
+    });
+  }
+})();
