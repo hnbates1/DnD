@@ -623,18 +623,6 @@ body.projector .stage {
   height: 100% !important;
 }
 
-.dice-roll-btn {
-  margin-top: 8px;
-  border-color: rgba(217, 179, 93, 0.55);
-  background: linear-gradient(180deg, rgba(217, 179, 93, 0.2), rgba(60, 47, 27, 0.7));
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-
-.dice-roll-btn:hover {
-  border-color: rgba(217, 179, 93, 0.9);
-  box-shadow: 0 0 16px rgba(217, 179, 93, 0.22);
-}
 
 .dice-result {
   margin-top: 8px;
@@ -698,6 +686,46 @@ body.projector .stage {
   color: rgba(174, 178, 168, 0.55);
   pointer-events: none;
   user-select: none;
+}
+
+.dice-action-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.dice-roll-btn {
+  flex: 1;
+  background: linear-gradient(135deg, #a07830 0%, #d9b35d 50%, #a07830 100%);
+  color: #1a1400;
+  border: none;
+  border-radius: 6px;
+  padding: 9px 0;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.dice-roll-btn:hover { opacity: 0.85; }
+.dice-roll-btn:active { transform: scale(0.97); }
+
+.dice-popout-btn {
+  background: #1e2030;
+  color: var(--muted, #8a8e82);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 9px 13px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.dice-popout-btn:hover {
+  background: #252840;
+  color: var(--gold, #d9b35d);
+  border-color: rgba(217, 179, 93, 0.3);
 }
 
 @media (max-width: 900px) {

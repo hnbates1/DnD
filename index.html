@@ -109,7 +109,10 @@
             <button class="die-pick active" data-dice="1d20">d20</button>
           </div>
           <div id="diceStage" class="dice-stage" title="Swipe to roll"></div>
-          <button id="rollDiceBtn" class="wide dice-roll-btn">Roll</button>
+          <div class="dice-action-row">
+            <button id="rollDiceBtn" class="dice-roll-btn">Roll</button>
+            <button id="popoutDiceBtn" class="dice-popout-btn" title="Open full 3D dice roller in new window">&#9656; Full 3D</button>
+          </div>
           <div id="diceResult3d" class="dice-result" aria-live="polite">
             <span id="diceResultInner" class="dice-result-inner">Pick a die — swipe stage or press Roll</span>
           </div>
@@ -186,6 +189,10 @@
     } else {
       roll2D();
     }
+  });
+
+  document.getElementById('popoutDiceBtn').addEventListener('click', function() {
+    window.open('/dice.html', 'diceRoller', 'width=520,height=680,resizable=yes');
   });
 
   function onBeforeRoll(notation) {

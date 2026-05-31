@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3D Dice Roller — DnD Crawl Projector</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #d9b35d;
+      --bg:   #0e0f11;
+      --card: #161820;
+      --line: rgba(255,255,255,0.07);
+      --muted: #8a8e82;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: #e8e4d8;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── layout ── */
+    .layout {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      height: 100vh;
+    }
+
+    /* ── top bar ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--line);
+      background: var(--card);
+      flex-shrink: 0;
+    }
+
+    .topbar h1 {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--gold);
+    }
+
+    .topbar a {
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .topbar a:hover { color: #e8e4d8; }
+
+    /* ── die picker ── */
+    .die-bar {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      padding: 10px 16px 0;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    .die-btn {
+      background: #1e2030;
+      color: #c8c4b8;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      min-width: 48px;
+    }
+    .die-btn:hover { background: #252840; color: #e8e4d8; }
+    .die-btn.active {
+      background: #2a2518;
+      color: var(--gold);
+      border-color: var(--gold);
+      box-shadow: 0 0 8px rgba(217,179,93,0.22);
+    }
+
+    /* ── 3D stage ── */
+    #diceStage {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      cursor: grab;
+      touch-action: none;
+      background: #101010;
+      overflow: hidden;
+    }
+    #diceStage:active { cursor: grabbing; }
+    #diceStage canvas { display: block; width: 100% !important; height: 100% !important; }
+
+    .fallback-hint {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+      padding: 24px;
+      pointer-events: none;
+    }
+
+    /* ── bottom bar ── */
+    .bottombar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px 16px 14px;
+      border-top: 1px solid var(--line);
+      background: var(--card);
+      flex-shrink: 0;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .notation-input {
+      flex: 1;
+      background: #1a1c24;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: #e8e4d8;
+      font-size: 14px;
+      padding: 8px 12px;
+      outline: none;
+    }
+    .notation-input:focus { border-color: rgba(217,179,93,0.4); }
+
+    .roll-btn {
+      background: linear-gradient(135deg, #a07830 0%, #d9b35d 50%, #a07830 100%);
+      color: #1a1400;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 24px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .roll-btn:hover { opacity: 0.88; }
+    .roll-btn:active { transform: scale(0.97); }
+
+    .result-bar {
+      font-size: 14px;
+      font-weight: 600;
+      min-height: 22px;
+      color: #c8c4b8;
+      text-align: center;
+    }
+    .result-bar.crit { color: #f0d060; text-shadow: 0 0 10px rgba(240,208,60,0.5); }
+    .result-bar.fail { color: #f07878; }
+
+    .history-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      min-height: 20px;
+    }
+
+    .hist-chip {
+      font-size: 11px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 2px 7px;
+      color: var(--muted);
+    }
+
+    /* ── 2D canvas fallback (same quality as sidebar) ── */
+    #canvas2d {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <div class="topbar">
+    <h1>&#9820; 3D Dice Roller</h1>
+    <a href="/" target="_self">&larr; Back to DM Console</a>
+  </div>
+
+  <div class="die-bar">
+    <button class="die-btn" data-dice="1d4">d4</button>
+    <button class="die-btn" data-dice="1d6">d6</button>
+    <button class="die-btn" data-dice="1d8">d8</button>
+    <button class="die-btn" data-dice="1d10">d10</button>
+    <button class="die-btn" data-dice="1d12">d12</button>
+    <button class="die-btn active" data-dice="1d20">d20</button>
+    <button class="die-btn" data-dice="2d6">2d6</button>
+    <button class="die-btn" data-dice="4d6">4d6</button>
+  </div>
+
+  <div id="diceStage"></div>
+
+  <div class="bottombar">
+    <div class="action-row">
+      <input id="notationInput" class="notation-input" type="text" value="1d20" placeholder="e.g. 1d20 or 2d6+1d4" spellcheck="false">
+      <button id="rollBtn" class="roll-btn">Roll</button>
+    </div>
+    <div id="resultBar" class="result-bar">Swipe the stage or press Roll</div>
+    <div id="historyRow" class="history-row"></div>
+  </div>
+
+</div>
+
+<script src="libs/three.min.js"></script>
+<script src="libs/cannon.min.js"></script>
+<script src="libs/teal.js"></script>
+<script src="libs/dice.js"></script>
+<script>
+(function() {
+  var box = null;
+  var currentDice = '1d20';
+  var rollHistory = [];
+  var MAX_HIST = 20;
+  var rolling2d = false;
+
+  var stage      = document.getElementById('diceStage');
+  var resultBar  = document.getElementById('resultBar');
+  var historyRow = document.getElementById('historyRow');
+  var notation   = document.getElementById('notationInput');
+  var rollBtn    = document.getElementById('rollBtn');
+
+  // ── die picker ──────────────────────────────────────
+  document.querySelectorAll('.die-btn[data-dice]').forEach(function(b) {
+    b.addEventListener('click', function() {
+      document.querySelectorAll('.die-btn').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      currentDice = b.dataset.dice;
+      notation.value = currentDice;
+      if (box) { box.setDice(currentDice); }
+      else { draw2D(currentDice, null); }
+    });
+  });
+
+  notation.addEventListener('change', function() {
+    currentDice = notation.value.trim() || '1d20';
+    document.querySelectorAll('.die-btn').forEach(function(x){ x.classList.remove('active'); });
+    var match = document.querySelector('.die-btn[data-dice="' + currentDice + '"]');
+    if (match) match.classList.add('active');
+    if (box) { box.setDice(currentDice); }
+  });
+
+  rollBtn.addEventListener('click', function() {
+    if (box) {
+      box.setDice(notation.value.trim() || currentDice);
+      box.start_throw(onBefore, onAfter);
+    } else {
+      roll2D();
+    }
+  });
+
+  // ── WebGL init ───────────────────────────────────────
+  function hasWebGL() {
+    try {
+      var c = document.createElement('canvas');
+      return !!(c.getContext('webgl') || c.getContext('experimental-webgl'));
+    } catch(e) { return false; }
+  }
+
+  requestAnimationFrame(function() {
+    if (hasWebGL()) {
+      try {
+        box = new DICE.dice_box(stage);
+        box.setDice(currentDice);
+        box.bind_swipe(stage, onBefore, onAfter);
+        return;
+      } catch(e) { console.warn('DICE 3D init failed:', e); }
+    }
+    init2D();
+  });
+
+  // ── 3D callbacks ─────────────────────────────────────
+  function onBefore() {
+    resultBar.textContent = 'Rolling\u2026';
+    resultBar.className = 'result-bar';
+    return null;
+  }
+
+  function onAfter(n) {
+    if (!n || !n.result || n.result[0] < 0) {
+      resultBar.textContent = 'Dice fell off the table — roll again!';
+      resultBar.className = 'result-bar';
+      return;
+    }
+    var sides = parseInt(currentDice.replace(/^\d+d/,''), 10);
+    showResult(n.result[0], sides, n.resultString, n.resultTotal);
+  }
+
+  // ── shared result display ─────────────────────────────
+  function showResult(top, sides, str, total) {
+    var isCrit = sides === 20 && top === 20;
+    var isFail = sides === 20 && top === 1;
+    var label = currentDice + ' \u2192 ' + str;
+    if (total !== undefined && total !== null && String(total) !== String(str)) label += ' = ' + total;
+    if (isCrit) label = '\u2728 Critical! ' + label;
+    if (isFail) label = '\uD83D\uDC80 Nat 1! ' + label;
+    resultBar.textContent = label;
+    resultBar.className = 'result-bar' + (isCrit ? ' crit' : isFail ? ' fail' : '');
+
+    rollHistory.unshift({ label: currentDice, val: str, isCrit: isCrit, isFail: isFail });
+    if (rollHistory.length > MAX_HIST) rollHistory.pop();
+    historyRow.innerHTML = '';
+    rollHistory.forEach(function(h) {
+      var chip = document.createElement('span');
+      chip.className = 'hist-chip';
+      chip.textContent = h.label + ':' + h.val;
+      if (h.isCrit) chip.style.color = '#f0d060';
+      if (h.isFail) chip.style.color = '#f07878';
+      historyRow.appendChild(chip);
+    });
+  }
+
+  // ── 2D canvas fallback ────────────────────────────────
+  var canvas2d = null, ctx2d = null;
+
+  var DICE_DEFS = {
+    d4:  { sides:4,  color:'#1a6e3a', hi:'#5ee88a', stroke:'#2ea850', shape:'tri',     numY:0.60 },
+    d6:  { sides:6,  color:'#1a3a7c', hi:'#5aaaf0', stroke:'#2a6acc', shape:'sq',      numY:0.55 },
+    d8:  { sides:8,  color:'#7c1a1a', hi:'#f06060', stroke:'#c43030', shape:'diamond', numY:0.55 },
+    d10: { sides:10, color:'#7a5010', hi:'#f0c050', stroke:'#c88020', shape:'kite',    numY:0.60 },
+    d12: { sides:12, color:'#3a1870', hi:'#b070f0', stroke:'#7030d0', shape:'hex',     numY:0.55 },
+    d20: { sides:20, color:'#0a1a52', hi:'#5a8fff', stroke:'#2050d8', shape:'tri-inv', numY:0.48 },
+  };
+
+  var SHAPES = {
+    'tri':     [[0.5,0.05],[0.97,0.92],[0.03,0.92]],
+    'tri-inv': [[0.5,0.95],[0.03,0.08],[0.97,0.08]],
+    'sq':      [[0.07,0.07],[0.93,0.07],[0.93,0.93],[0.07,0.93]],
+    'diamond': [[0.5,0.03],[0.97,0.5],[0.5,0.97],[0.03,0.5]],
+    'kite':    [[0.5,0.04],[0.94,0.36],[0.77,0.94],[0.23,0.94],[0.06,0.36]],
+    'hex':     [[0.5,0.04],[0.92,0.27],[0.92,0.73],[0.5,0.96],[0.08,0.73],[0.08,0.27]],
+  };
+
+  function init2D() {
+    stage.innerHTML = '';
+    canvas2d = document.createElement('canvas');
+    canvas2d.id = 'canvas2d';
+    stage.appendChild(canvas2d);
+    resize2D();
+    window.addEventListener('resize', resize2D);
+    draw2D(currentDice, null);
+
+    var hint = document.createElement('div');
+    hint.className = 'fallback-hint';
+    hint.innerHTML = '<span style="font-size:32px">&#9820;</span><span>3D physics dice require WebGL<br>Rendering 2D fallback</span>';
+    stage.appendChild(hint);
+  }
+
+  function resize2D() {
+    if (!canvas2d) return;
+    canvas2d.width  = stage.clientWidth;
+    canvas2d.height = stage.clientHeight;
+    ctx2d = canvas2d.getContext('2d');
+    draw2D(currentDice, canvas2d._lastResult);
+  }
+
+  function parseDice(n) {
+    var m = n.match(/(\d+)d(\d+)/);
+    return m ? { count: parseInt(m[1]), sides: parseInt(m[2]) } : { count:1, sides:20 };
+  }
+
+  function draw2D(diceStr, result) {
+    if (!ctx2d) return;
+    var w = canvas2d.width, h = canvas2d.height;
+    var d = parseDice(diceStr);
+    var key = 'd' + d.sides;
+    var def = DICE_DEFS[key] || DICE_DEFS['d20'];
+    var pts = SHAPES[def.shape];
+
+    ctx2d.clearRect(0, 0, w, h);
+
+    var pad = Math.min(w, h) * 0.10;
+    var sz  = Math.min(w, h) - pad * 2;
+    var ox  = (w - sz) / 2;
+    var oy  = (h - sz) / 2;
+
+    function polyPath() {
+      ctx2d.beginPath();
+      ctx2d.moveTo(ox + pts[0][0]*sz, oy + pts[0][1]*sz);
+      for (var i = 1; i < pts.length; i++) ctx2d.lineTo(ox + pts[i][0]*sz, oy + pts[i][1]*sz);
+      ctx2d.closePath();
+    }
+
+    // shadow
+    ctx2d.save();
+    ctx2d.shadowColor = 'rgba(0,0,0,0.75)';
+    ctx2d.shadowBlur  = sz * 0.14;
+    ctx2d.shadowOffsetY = sz * 0.06;
+
+    // body gradient
+    var grd = ctx2d.createRadialGradient(
+      ox + sz*0.36, oy + sz*0.26, 0,
+      ox + sz*0.5,  oy + sz*0.5,  sz * 0.72
+    );
+    grd.addColorStop(0,    def.hi);
+    grd.addColorStop(0.40, def.color);
+    grd.addColorStop(1,    'rgba(0,0,0,0.90)');
+
+    polyPath();
+    ctx2d.fillStyle = grd;
+    ctx2d.fill();
+    ctx2d.restore();
+
+    // edge
+    polyPath();
+    ctx2d.strokeStyle = def.stroke;
+    ctx2d.lineWidth   = sz * 0.022;
+    ctx2d.stroke();
+
+    // inner facet
+    var ipts = pts.map(function(p){ return [0.5+(p[0]-0.5)*0.60, 0.5+(p[1]-0.5)*0.60]; });
+    ctx2d.beginPath();
+    ctx2d.moveTo(ox + ipts[0][0]*sz, oy + ipts[0][1]*sz);
+    for (var i = 1; i < ipts.length; i++) ctx2d.lineTo(ox + ipts[i][0]*sz, oy + ipts[i][1]*sz);
+    ctx2d.closePath();
+    ctx2d.strokeStyle = 'rgba(255,255,255,0.16)';
+    ctx2d.lineWidth   = sz * 0.010;
+    ctx2d.stroke();
+
+    // specular
+    var shine = ctx2d.createRadialGradient(
+      ox + sz*0.32, oy + sz*0.24, 0,
+      ox + sz*0.32, oy + sz*0.24, sz * 0.26
+    );
+    shine.addColorStop(0, 'rgba(255,255,255,0.35)');
+    shine.addColorStop(1, 'rgba(255,255,255,0)');
+    polyPath();
+    ctx2d.fillStyle = shine;
+    ctx2d.fill();
+
+    // number
+    var cx = ox + sz*0.5, cy = oy + sz*def.numY;
+    if (result !== null && result !== undefined) {
+      ctx2d.font = 'bold ' + Math.round(sz*0.38) + 'px Arial';
+      ctx2d.fillStyle  = '#fff8df';
+      ctx2d.textAlign  = 'center';
+      ctx2d.textBaseline = 'middle';
+      ctx2d.shadowColor = 'rgba(0,0,0,0.95)';
+      ctx2d.shadowBlur  = sz * 0.07;
+      ctx2d.fillText(String(result), cx, cy);
+      ctx2d.shadowBlur  = 0;
+    } else {
+      ctx2d.font = 'bold ' + Math.round(sz*0.20) + 'px Arial';
+      ctx2d.fillStyle  = 'rgba(255,248,220,0.65)';
+      ctx2d.textAlign  = 'center';
+      ctx2d.textBaseline = 'middle';
+      ctx2d.fillText(key, cx, cy);
+    }
+    if (canvas2d) canvas2d._lastResult = result;
+  }
+
+  function roll2D() {
+    if (rolling2d) return;
+    rolling2d = true;
+    resultBar.textContent = 'Rolling\u2026';
+    resultBar.className = 'result-bar';
+    var d = parseDice(notation.value.trim() || currentDice);
+    var total = 0;
+    var frames = 0, maxFrames = 26;
+
+    function animate() {
+      var fake = Math.floor(Math.random() * d.sides) + 1;
+      draw2D('1d' + d.sides, fake);
+      frames++;
+      if (frames < maxFrames) {
+        setTimeout(animate, 28 + frames * 4);
+      } else {
+        // Roll all dice
+        var results = [];
+        for (var i = 0; i < d.count; i++) results.push(Math.floor(Math.random() * d.sides) + 1);
+        total = results.reduce(function(a,b){ return a+b; }, 0);
+        draw2D('1d' + d.sides, results[0]);
+        rolling2d = false;
+        showResult(results[0], d.sides, results.join('+'), total);
+      }
+    }
+    animate();
+  }
+
+})();
+</script>
+</body>
+</html>
