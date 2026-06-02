@@ -16,6 +16,45 @@
         <canvas id="effectCanvas" class="effect-canvas"></canvas>
         <div id="fogLayer" class="fog-layer"></div>
         <div id="tokenLayer" class="token-layer"></div>
+        <div id="tokenContextMenu" class="token-context-menu hidden">
+          <div class="token-menu-title">Token</div>
+          <div class="mini-stepper">
+            <span>HP</span>
+            <button data-token-stat="health" data-delta="-10">-10</button>
+            <button data-token-stat="health" data-delta="-1">-1</button>
+            <button data-token-stat="health" data-delta="1">+1</button>
+            <button data-token-stat="health" data-delta="10">+10</button>
+          </div>
+          <div class="mini-stepper">
+            <span>Mana</span>
+            <button data-token-stat="mana" data-delta="-10">-10</button>
+            <button data-token-stat="mana" data-delta="-1">-1</button>
+            <button data-token-stat="mana" data-delta="1">+1</button>
+            <button data-token-stat="mana" data-delta="10">+10</button>
+          </div>
+          <div class="mini-stepper">
+            <span>Size</span>
+            <button data-token-stat="size" data-delta="-12">-</button>
+            <button data-token-size="82">M</button>
+            <button data-token-size="118">L</button>
+            <button data-token-stat="size" data-delta="12">+</button>
+          </div>
+          <div class="status-picker">
+            <span>Buffs</span>
+            <button data-token-buff="Bless">Bless</button>
+            <button data-token-buff="Shield">Shield</button>
+            <button data-token-buff="Haste">Haste</button>
+            <button data-token-buff="Invisible">Invisible</button>
+          </div>
+          <div class="status-picker">
+            <span>Debuffs</span>
+            <button data-token-debuff="Poisoned">Poisoned</button>
+            <button data-token-debuff="Stunned">Stunned</button>
+            <button data-token-debuff="Restrained">Restrained</button>
+            <button data-token-debuff="Blinded">Blinded</button>
+          </div>
+          <button id="clearTokenStatusButton" class="wide">Clear status</button>
+        </div>
         <div id="menuRing" class="menu-ring hidden">
           <button data-effect="fire">Fire</button>
           <button data-effect="ice">Ice</button>
@@ -72,6 +111,77 @@
             <button data-effect="shock">Shock</button>
           </div>
           <button id="clearButton" class="wide danger">Clear overlays</button>
+        </div>
+
+        <div class="panel">
+          <div class="panel-heading">
+            <h2>Player Status</h2>
+            <span id="selectedTokenBadge" class="pill">No player</span>
+          </div>
+          <select id="playerSelect" class="media-select" aria-label="Select player token">
+            <option value="">Select player</option>
+          </select>
+          <label class="name-control" for="playerNameInput">
+            Name
+            <input id="playerNameInput" type="text" maxlength="24" placeholder="Player name" disabled>
+          </label>
+          <div class="stat-control health-control">
+            <label for="healthInput">Health</label>
+            <div class="stepper-row">
+              <button data-stat="health" data-delta="-10">-10</button>
+              <button data-stat="health" data-delta="-1">-1</button>
+              <input id="healthInput" type="number" min="0" max="100" value="100">
+              <button data-stat="health" data-delta="1">+1</button>
+              <button data-stat="health" data-delta="10">+10</button>
+            </div>
+          </div>
+          <div class="stat-control mana-control">
+            <label for="manaInput">Mana</label>
+            <div class="stepper-row">
+              <button data-stat="mana" data-delta="-10">-10</button>
+              <button data-stat="mana" data-delta="-1">-1</button>
+              <input id="manaInput" type="number" min="0" max="100" value="70">
+              <button data-stat="mana" data-delta="1">+1</button>
+              <button data-stat="mana" data-delta="10">+10</button>
+            </div>
+          </div>
+          <div class="button-row">
+            <button id="fullHealthButton">Full HP</button>
+            <button id="fullManaButton">Full Mana</button>
+          </div>
+        </div>
+
+        <div class="panel dice-panel">
+          <div class="panel-heading">
+            <h2>Dice</h2>
+            <span id="diceTotalBadge" class="pill">Ready</span>
+          </div>
+          <div class="dice-grid">
+            <button data-die="4">d4</button>
+            <button data-die="6">d6</button>
+            <button data-die="8">d8</button>
+            <button data-die="10">d10</button>
+            <button data-die="12">d12</button>
+            <button data-die="20">d20</button>
+            <button data-die="100">d100</button>
+            <button id="clearDiceButton">Clear</button>
+          </div>
+          <div class="dice-options">
+            <label>
+              Count
+              <input id="diceCountInput" type="number" min="1" max="20" value="1">
+            </label>
+            <label>
+              Mod
+              <input id="diceModInput" type="number" min="-99" max="99" value="0">
+            </label>
+          </div>
+          <div class="button-row">
+            <button id="advantageButton">Advantage</button>
+            <button id="disadvantageButton">Disadvantage</button>
+          </div>
+          <div id="diceResult" class="dice-result">Choose a die</div>
+          <div id="diceHistory" class="dice-history" aria-live="polite"></div>
         </div>
 
         <div class="panel ai-panel">

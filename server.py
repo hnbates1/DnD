@@ -7,7 +7,7 @@ from urllib.request import Request, urlopen
 
 VIDEO_EXTENSIONS = {".mp4", ".webm", ".mov", ".m4v", ".avi", ".mkv"}
 OPENAI_URL = "https://api.openai.com/v1/responses"
-DEFAULT_MODEL = "gpt-5.5"
+DEFAULT_MODEL = "gpt-4o"
 
 
 def load_local_env():

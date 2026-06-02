@@ -121,7 +121,6 @@ button.active {
 }
 
 .effect-canvas,
-.token-layer,
 .fog-layer {
   pointer-events: none;
 }
@@ -161,18 +160,22 @@ button.active {
 
 .token-layer {
   z-index: 5;
+  pointer-events: none;
 }
 
 .token {
   position: absolute;
-  width: 82px;
-  height: 82px;
+  width: var(--token-size, 82px);
+  height: var(--token-size, 82px);
   transform: translate(-50%, -50%);
   border-radius: 50%;
   --hp: 100%;
   --mp: 70%;
   --piece-color: #d9b35d;
+  --token-size: 82px;
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .token::after {
@@ -186,6 +189,33 @@ button.active {
 
 .token.stale {
   opacity: 0.55;
+}
+
+.token.selected::after {
+  border-color: rgba(255, 248, 210, 0.84);
+  box-shadow: 0 0 24px rgba(217, 179, 93, 0.58);
+  opacity: 0.9;
+}
+
+.token-name {
+  position: absolute;
+  left: 50%;
+  bottom: -28px;
+  max-width: 118px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 244, 216, 0.34);
+  border-radius: 999px;
+  background: rgba(8, 10, 11, 0.76);
+  color: #fff4d8;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.1;
+  padding: 4px 8px;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .health-ring,
@@ -204,7 +234,7 @@ button.active {
 }
 
 .mana-ring {
-  inset: 10px;
+  inset: 12%;
   background:
     conic-gradient(#4aa3ff var(--mp), rgba(24, 38, 70, 0.9) 0),
     radial-gradient(circle, transparent 54%, rgba(0, 0, 0, 0.78) 56%);
@@ -212,7 +242,7 @@ button.active {
 }
 
 .piece-core {
-  inset: 22px;
+  inset: 27%;
   border: 2px solid rgba(244, 226, 163, 0.92);
   background:
     radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.34), transparent 19%),
@@ -238,11 +268,11 @@ button.active {
 }
 
 .badge-row.buffs {
-  top: -9px;
+  top: -11px;
 }
 
 .badge-row.debuffs {
-  bottom: -9px;
+  bottom: -11px;
 }
 
 .status-badge {
@@ -265,6 +295,56 @@ button.active {
 
 .status-badge.debuff {
   background: #ff6a5d;
+}
+
+.token-context-menu {
+  position: absolute;
+  z-index: 11;
+  width: 286px;
+  transform: translate(-50%, 56px);
+  border: 1px solid rgba(255, 244, 216, 0.32);
+  border-radius: 8px;
+  background: rgba(13, 16, 18, 0.94);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45), 0 0 28px rgba(217, 179, 93, 0.16);
+  padding: 10px;
+}
+
+.token-menu-title {
+  color: #fff4d8;
+  font-weight: 800;
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mini-stepper,
+.status-picker {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.mini-stepper {
+  grid-template-columns: 42px repeat(4, 1fr);
+  align-items: center;
+}
+
+.mini-stepper span,
+.status-picker span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.status-picker {
+  grid-template-columns: 58px repeat(2, minmax(0, 1fr));
+}
+
+.status-picker button,
+.mini-stepper button {
+  min-height: 32px;
+  padding: 5px 7px;
+  font-size: 12px;
 }
 
 @keyframes tokenPulse {
@@ -419,7 +499,8 @@ h2 {
 .button-row,
 .tool-grid,
 .spell-grid,
-.quick-grid {
+.quick-grid,
+.stepper-row {
   display: grid;
   gap: 8px;
   margin-top: 10px;
@@ -431,8 +512,180 @@ h2 {
 
 .tool-grid,
 .spell-grid,
-.quick-grid {
+.quick-grid,
+.dice-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.stat-control {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.stat-control label,
+.name-control {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.name-control {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.name-control input {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #111518;
+  color: var(--text);
+  padding: 8px 10px;
+}
+
+.stepper-row {
+  grid-template-columns: 52px 44px minmax(58px, 1fr) 44px 52px;
+}
+
+.stepper-row input {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #111518;
+  color: var(--text);
+  padding: 8px;
+  text-align: center;
+}
+
+.health-control input:focus {
+  outline: 2px solid rgba(66, 214, 114, 0.45);
+}
+
+.mana-control input:focus {
+  outline: 2px solid rgba(74, 163, 255, 0.45);
+}
+
+.dice-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.dice-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.dice-options label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.dice-options input {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #111518;
+  color: var(--text);
+  padding: 8px;
+  text-align: center;
+}
+
+.dice-result {
+  margin-top: 10px;
+  border: 1px solid rgba(217, 179, 93, 0.36);
+  border-radius: 6px;
+  background: rgba(217, 179, 93, 0.07);
+  color: #fff4d8;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 11px 12px;
+  text-align: center;
+}
+
+.dice-history {
+  display: grid;
+  gap: 6px;
+  max-height: 150px;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+
+.roll-line {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+  font-size: 13px;
+  padding: 7px 8px;
+}
+
+.roll-toss {
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  top: 50%;
+  width: min(720px, 86vw);
+  height: min(420px, 62vh);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  perspective: 1000px;
+}
+
+.dice-scatter {
+  position: absolute;
+  inset: 0;
+  filter: saturate(1.08);
+}
+
+.dice-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.roll-summary {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  min-width: 260px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 244, 216, 0.58);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(217, 179, 93, 0.24), transparent 58%),
+    rgba(9, 11, 12, 0.88);
+  color: #fff4d8;
+  padding: 14px 18px;
+  text-align: center;
+  box-shadow: 0 0 56px rgba(217, 179, 93, 0.36), 0 18px 45px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  animation: rollSummary 3.35s ease 0.95s forwards;
+}
+
+.roll-summary .roll-total {
+  display: block;
+  font-size: 56px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.roll-summary .roll-formula {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+@keyframes rollSummary {
+  0% { opacity: 0; transform: translateX(-50%) translateY(12px) scale(0.94); }
+  16% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  76% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-12px) scale(0.98); }
 }
 
 .ai-panel textarea {
